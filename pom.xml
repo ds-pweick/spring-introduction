@@ -15,7 +15,7 @@
     <description>NWK Beispielprojekt für Spring</description>
     <packaging>pom</packaging>
     <properties>
-        <java.version>19</java.version>
+        <java.version>17</java.version>
     </properties>
     <dependencies>
         <dependency>
@@ -30,7 +30,7 @@
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
-            <version>42.5.4</version>
+            <version>42.7.0</version>
         </dependency>
         <dependency>
             <groupId>org.projectlombok</groupId>

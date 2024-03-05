@@ -1,0 +1,8 @@
+services:
+  db:
+    image: postgres
+    restart: always
+    environment:
+      POSTGRES_USER: TestUser
+      POSTGRES_PASSWORD: TestPasswordForInternExercises
+      POSTGRES_DB: TestDB
