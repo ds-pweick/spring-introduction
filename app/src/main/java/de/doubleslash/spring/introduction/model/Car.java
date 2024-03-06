@@ -1,12 +1,17 @@
 package de.doubleslash.spring.introduction.model;
 
+import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
+import lombok.Getter;
+import lombok.Setter;
 import org.springframework.data.annotation.CreatedDate;
 
 import java.time.Instant;
 import java.util.Objects;
-
+@Setter
+@Getter
+@Entity
 public class Car {
     @Id
     @GeneratedValue
@@ -16,35 +21,14 @@ public class Car {
     @CreatedDate
     private Instant date;
 
-    public long getId() {
-        return id;
+    public Car() {
+
     }
 
-    public void setId(long id) {
+    public Car(long id, String model, String brand, Instant date) {
         this.id = id;
-    }
-
-    public String getModel() {
-        return model;
-    }
-
-    public void setModel(String model) {
         this.model = model;
-    }
-
-    public String getBrand() {
-        return brand;
-    }
-
-    public void setBrand(String brand) {
         this.brand = brand;
-    }
-
-    public Instant getDate() {
-        return date;
-    }
-
-    public void setDate(Instant date) {
         this.date = date;
     }
 
