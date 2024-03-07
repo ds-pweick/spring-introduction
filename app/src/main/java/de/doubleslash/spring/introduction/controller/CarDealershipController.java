@@ -37,14 +37,17 @@ public class CarDealershipController {
     }
 
     @GetMapping("/cars/{id}")
-    public ResponseEntity<String> get(@PathVariable long id) {
-        String responseText = "No car of this id was found";
+    public ResponseEntity<String> get(@Valid @NotNull @PathVariable long id) {
+        String responseText = "No car of id %d was found".formatted(id);
         HttpStatus httpStatus = HttpStatus.INTERNAL_SERVER_ERROR;
         try {
             Car car = repository.findById(id).orElseThrow(NoSuchElementException::new);
             responseText = car.toString();
             httpStatus = HttpStatus.OK;
         } catch (NoSuchElementException e) {
+            httpStatus = HttpStatus.BAD_REQUEST;
+            log.error(e.getMessage());
+        } catch (Exception e) {
             log.error(e.getMessage());
         }
 
@@ -72,14 +75,21 @@ public class CarDealershipController {
         Car firstCar = mappingRequest.firstCar;
         Car secondCar = mappingRequest.secondCar;
 
-        String responseText = "No car of this id was found";
+        String responseText = "No car of id %d was replaced".formatted(firstCar.getId());
         HttpStatus httpStatus = HttpStatus.INTERNAL_SERVER_ERROR;
 
         try {
+            if (!repository.existsById(firstCar.getId())) {
+                responseText = "No car with requested id %d found".formatted(firstCar.getId());
+                throw new NoSuchElementException(responseText);
+            }
             repository.deleteById(firstCar.getId());
             repository.save(secondCar);
-            responseText = "Successfully replaced cars";
+            responseText = "Successfully replaced car";
             httpStatus = HttpStatus.OK;
+        } catch (NoSuchElementException e) {
+            httpStatus = HttpStatus.BAD_REQUEST;
+            log.error(e.getMessage());
         } catch (Exception e) {
             log.error(e.getMessage());
         }
@@ -88,13 +98,20 @@ public class CarDealershipController {
     }
 
     @DeleteMapping("/cars/{id}")
-    public ResponseEntity<String> deleteCar(@PathVariable Long id) {
+    public ResponseEntity<String> deleteCar(@Valid @NotNull @PathVariable Long id) {
         HttpStatus httpStatus = HttpStatus.INTERNAL_SERVER_ERROR;
         String responseText = "Deletion unsuccessful";
         try {
+            if (!repository.existsById(id)) {
+                responseText = "No car with requested id %d found".formatted(id);
+                throw new NoSuchElementException(responseText);
+            }
             repository.deleteById(id);
             httpStatus = HttpStatus.OK;
             responseText = "Deletion successful";
+        } catch (NoSuchElementException e) {
+            httpStatus = HttpStatus.BAD_REQUEST;
+            log.error(e.getMessage());
         } catch (Exception e) {
             log.error(e.getMessage());
         }
@@ -102,16 +119,16 @@ public class CarDealershipController {
         return new ResponseEntity<>(responseText, httpStatus);
     }
 
-    @DeleteMapping("/cars/brand/{brandOfCar}")
+    @DeleteMapping("/cars/brand/{brand}")
     @Transactional
-    public ResponseEntity<String> deleteCarByBrand(@PathVariable String brandOfCar) {
+    public ResponseEntity<String> deleteCarByBrand(@Valid @NotNull @PathVariable String brand) {
         HttpStatus httpStatus = HttpStatus.INTERNAL_SERVER_ERROR;
         String responseText = "Deletion unsuccessful";
         try {
-            List<Car> deleted = repository.deleteCarByBrand(brandOfCar);
+            List<Car> deleted = repository.deleteCarByBrand(brand);
             httpStatus = HttpStatus.OK;
             if (!deleted.isEmpty()) {
-                responseText = "Successfully deleted %d car(s)".formatted(deleted.size());
+                responseText = "Successfully deleted %d car(s) of brand %s".formatted(deleted.size(), brand);
             } else {
                 responseText = "No cars were deleted";
             }
