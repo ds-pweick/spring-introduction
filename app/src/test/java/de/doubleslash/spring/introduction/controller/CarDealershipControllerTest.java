@@ -42,7 +42,6 @@ class CarDealershipControllerTest {
 
         final ResponseEntity<List<Car>> result = controller.all();
 
-
         assertThat(result.hasBody()).isTrue();
         assertThat(result.getBody()).isEqualTo(List.of());
     }

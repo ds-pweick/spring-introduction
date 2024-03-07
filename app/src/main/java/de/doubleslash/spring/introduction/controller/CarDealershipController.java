@@ -70,8 +70,8 @@ public class CarDealershipController {
         return new ResponseEntity<>(responseText, httpStatus);
     }
 
-    @PostMapping("/cars")
-    public ResponseEntity<Optional<String>> replaceCar(@Valid @NotNull @RequestBody CarCheckMappingRequest mappingRequest) {
+    @PostMapping("/cars/replace")
+    public ResponseEntity<Optional<String>> replaceCar(@Valid @RequestBody CarCheckMappingRequest mappingRequest) {
         Car firstCar = mappingRequest.firstCar;
         Car secondCar = mappingRequest.secondCar;
 
