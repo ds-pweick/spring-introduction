@@ -18,9 +18,10 @@ import java.util.Objects;
 public class Car {
     @Id
     @GeneratedValue
-    private long id;
+    private Long id;
     private String model;
     private String brand;
+
     @CreatedDate
     private Instant date;
 

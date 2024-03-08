@@ -1,6 +1,7 @@
 package de.doubleslash.spring.introduction.springcontexttests.controller;
 
 import de.doubleslash.spring.introduction.controller.CarDealershipController;
+import de.doubleslash.spring.introduction.controller.CarNotFoundException;
 import de.doubleslash.spring.introduction.model.Car;
 import de.doubleslash.spring.introduction.model.CarCheckMappingRequest;
 import de.doubleslash.spring.introduction.repository.CarRepository;
@@ -26,7 +27,7 @@ class PostCarInMemoryTest extends SpringInMemoryTest {
     }
 
     @Test
-    void givenCars_whenRequestingCarReplacement_thenGetNewCar() {
+    void givenCars_whenRequestingCarReplacement_thenGetNewCar() throws CarNotFoundException {
         final Car firstCar = Car.builder().model("TestModel").brand("TestBrand").build();
         final Car secondCar = Car.builder().model("TestModel").brand("TestBrand").build();
         final CarCheckMappingRequest mappingRequest = CarCheckMappingRequest.builder()

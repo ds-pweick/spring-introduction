@@ -23,10 +23,6 @@ public abstract class SpringInMemoryTest {
     @Autowired
     private CarRepository repository;
 
-
-    /*@Autowired
-    private TestRestTemplate testRestTemplate;*/
-
     @BeforeEach
     public void beforeEach() {
         System.out.println("Test started: " + this.getClass().getSimpleName());
@@ -41,9 +37,5 @@ public abstract class SpringInMemoryTest {
     private void cleanupDb(){
         repository.deleteAllInBatch();
     }
-
-    /*protected HttpHeaders getDefaultHeaders() {
-        return new HttpHeaders();
-    }*/
 
 }

@@ -18,7 +18,3 @@ spring:
     hibernate:
       ddl-auto: update
     database-platform: org.hibernate.dialect.PostgreSQLDialect
-
-configuration:
-  cron:
-    schedule: "* * * 10 * *"
