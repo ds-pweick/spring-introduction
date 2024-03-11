@@ -1,11 +1,12 @@
 package de.doubleslash.spring.introduction.springcontexttests.controller;
 
 import de.doubleslash.spring.introduction.controller.CarDealershipController;
+import de.doubleslash.spring.introduction.controller.CarModelOrBrandStringTooLongException;
 import de.doubleslash.spring.introduction.model.Car;
 import de.doubleslash.spring.introduction.repository.CarRepository;
 import de.doubleslash.spring.introduction.springcontexttests.setup.SpringInMemoryTest;
-import jakarta.annotation.Resource;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,13 +16,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class DeleteCarInMemoryTest extends SpringInMemoryTest {
 
-    @Resource
+    @Autowired
     private CarRepository repository;
-    @Resource
+    @Autowired
     private CarDealershipController controller;
 
     @Test
-    void givenCar_whenDeletingCar_thenDeleteCar() {
+    void givenCar_whenDeletingCar_thenDeleteCar() throws CarModelOrBrandStringTooLongException {
         Car car = Car.builder().model("TestModel").brand("TestBrand").build();
         controller.addCar(car);
         repository.deleteById(0L);

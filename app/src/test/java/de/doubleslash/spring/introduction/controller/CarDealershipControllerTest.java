@@ -27,6 +27,27 @@ class CarDealershipControllerTest {
     private CarDealershipController controller;
 
     @Test
+    void givenValidRequestToAddCar_whenAddingCar_thenReturnSuccessMessageString() throws CarModelOrBrandStringTooLongException {
+        final Car car = Car.builder().model("TestModel").brand("TestBrand").build();
+        final String expected = "Successfully added car TestBrand TestModel";
+
+        when(repository.save(car)).thenReturn(car);
+
+        final ResponseEntity<String> result = controller.addCar(car);
+
+        assertThat(result.hasBody()).isTrue();
+        assertThat(result.getBody()).isEqualTo(expected);
+    }
+
+    @Test
+    void givenInvalidRequestToAddCar_whenAddingCar_thenReturnErrorMessageString() {
+        final Car car = Car.builder().model("TestModel".repeat(500)).brand("TestBrand".repeat(500)).build();
+        final String expected = "Car model and/or brand name exceeds the character limit";
+
+        assertThrows(CarModelOrBrandStringTooLongException.class, () -> controller.addCar(car), expected);
+    }
+
+    @Test
     void givenRequestToFetchAllCars_whenFetchingCars_thenReturnCarList() {
         final List<Car> expected = List.of(Car.builder().model("TestModel").brand("TestBrand").build());
         when(repository.findAll()).thenReturn(expected);
@@ -57,7 +78,7 @@ class CarDealershipControllerTest {
     }
 
     @Test
-    void givenValidCarCheckMappingRequest_whenReplacingCar_thenReturnSuccessMessageString() throws CarNotFoundException {
+    void givenValidCarCheckMappingRequest_whenReplacingCar_thenReturnSuccessMessageString() throws CarNotFoundException, CarModelOrBrandStringTooLongException {
         final Car firstCar = Car.builder().id(1L).model("TestModel").brand("TestBrand").build();
         final Car secondCar = Car.builder().model("TestModel2").brand("TestBrand2").build();
         final CarCheckMappingRequest mappingRequest = CarCheckMappingRequest.builder()
@@ -86,19 +107,6 @@ class CarDealershipControllerTest {
         when(repository.existsById(firstCar.getId())).thenReturn(false);
 
         assertThrows(CarNotFoundException.class, () -> controller.replaceCar(mappingRequest), expected);
-    }
-
-    @Test
-    void givenValidRequestToAddCar_whenAddingCar_thenReturnSuccessMessageString() {
-        final Car car = Car.builder().model("TestModel").brand("TestBrand").build();
-        final String expected = "Successfully added car";
-
-        when(repository.save(car)).thenReturn(car);
-
-        final ResponseEntity<String> result = controller.addCar(car);
-
-        assertThat(result.hasBody()).isTrue();
-        assertThat(result.getBody()).isEqualTo(expected);
     }
 
     @Test

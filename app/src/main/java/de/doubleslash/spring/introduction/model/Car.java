@@ -10,20 +10,19 @@ import java.time.Instant;
 import java.util.Objects;
 
 @AllArgsConstructor
-@NoArgsConstructor
-@Setter
-@Getter
+@NoArgsConstructor(force = true)
+@Value
 @Entity
 @Builder
 public class Car {
     @Id
     @GeneratedValue
-    private Long id;
-    private String model;
-    private String brand;
+    Long id;
+    String model;
+    String brand;
 
     @CreatedDate
-    private Instant date;
+    Instant date;
 
     public boolean equals(Car car) {
         return hashCode() == car.hashCode();

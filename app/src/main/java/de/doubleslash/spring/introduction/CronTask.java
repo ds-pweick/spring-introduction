@@ -24,7 +24,7 @@ public class CronTask {
 
     private final CarRepository repository;
 
-    @Scheduled(cron = "@midnight")
+    @Scheduled(cron = "${configuration.cron.schedule}")
     public void scheduledDeletionOfOldData() {
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime oneDayAgo = now.minusHours(24);

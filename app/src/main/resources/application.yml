@@ -10,7 +10,7 @@ server:
 
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/springintroduction
+    url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/springintroduction}
     username: postgres
     password: password
     driver-class-name: org.postgresql.Driver
@@ -18,3 +18,7 @@ spring:
     hibernate:
       ddl-auto: update
     database-platform: org.hibernate.dialect.PostgreSQLDialect
+
+configuration:
+  cron:
+    schedule: "0 0 * * * *"

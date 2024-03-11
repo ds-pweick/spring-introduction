@@ -37,17 +37,23 @@ public class CarDealershipController {
     }
 
     @PostMapping("/cars/add")
-    public ResponseEntity<String> addCar(@Valid @NotNull @RequestBody Car car) {
+    public ResponseEntity<String> addCar(@Valid @NotNull @RequestBody Car car) throws CarModelOrBrandStringTooLongException {
+        if (!validateCarBrandAndModelStringLengths(car)) {
+            throw new CarModelOrBrandStringTooLongException("Car model and/or brand name exceeds the character limit");
+        }
         repository.save(car);
-        String responseText = "Successfully added car %s %s".formatted(car.getBrand(), car.getModel());
 
-        return new ResponseEntity<>(responseText, HttpStatus.OK);
+        return new ResponseEntity<>("Successfully added car %s %s".formatted(car.getBrand(), car.getModel()), HttpStatus.OK);
     }
 
     @PostMapping("/cars/replace")
-    public ResponseEntity<String> replaceCar(@Valid @RequestBody CarCheckMappingRequest mappingRequest) throws CarNotFoundException {
+    public ResponseEntity<String> replaceCar(@Valid @RequestBody CarCheckMappingRequest mappingRequest) throws CarNotFoundException, CarModelOrBrandStringTooLongException {
         Car firstCar = mappingRequest.firstCar;
         Car secondCar = mappingRequest.secondCar;
+
+        if (!validateCarBrandAndModelStringLengths(secondCar)) {
+            throw new CarModelOrBrandStringTooLongException("Car model and/or brand name exceeds the character limit");
+        }
 
         if (firstCar.getId() == null || !repository.existsById(firstCar.getId())) {
             throw new CarNotFoundException(getErrorMessageForId(firstCar.getId()));
@@ -84,5 +90,9 @@ public class CarDealershipController {
 
     private String getErrorMessageForId(Long id) {
         return "No car with requested id %d found".formatted(id);
+    }
+
+    private Boolean validateCarBrandAndModelStringLengths(Car car) {
+        return car.getModel().length() <= 300 && car.getBrand().length() <= 100;
     }
 }

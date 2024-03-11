@@ -1,5 +1,17 @@
 services:
+  web:
+    image: "spring-introduction"
+    ports:
+      - 9090:9090
+      - 9091:9091
+    depends_on:
+      - db
+    environment:
+      DATABASE_URL: jdbc:postgresql://spring-introduction-postgres:5432/springintroduction
+
+
   db:
+    container_name: spring-introduction-postgres
     image: postgres
     restart: always
     ports:

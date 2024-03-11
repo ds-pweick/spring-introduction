@@ -1,24 +1,25 @@
 package de.doubleslash.spring.introduction.springcontexttests.controller;
 
 import de.doubleslash.spring.introduction.controller.CarDealershipController;
+import de.doubleslash.spring.introduction.controller.CarModelOrBrandStringTooLongException;
 import de.doubleslash.spring.introduction.controller.CarNotFoundException;
 import de.doubleslash.spring.introduction.model.Car;
 import de.doubleslash.spring.introduction.model.CarCheckMappingRequest;
 import de.doubleslash.spring.introduction.repository.CarRepository;
 import de.doubleslash.spring.introduction.springcontexttests.setup.SpringInMemoryTest;
-import jakarta.annotation.Resource;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 class PostCarInMemoryTest extends SpringInMemoryTest {
-    @Resource
+    @Autowired
     private CarRepository repository;
-    @Resource
+    @Autowired
     private CarDealershipController controller;
 
     @Test
-    void givenCar_whenAddingCar_thenGetCar() {
+    void givenCar_whenAddingCar_thenGetCar() throws CarModelOrBrandStringTooLongException {
         final Car car = Car.builder().model("TestModel").brand("TestBrand").build();
 
         controller.addCar(car);
@@ -27,7 +28,7 @@ class PostCarInMemoryTest extends SpringInMemoryTest {
     }
 
     @Test
-    void givenCars_whenRequestingCarReplacement_thenGetNewCar() throws CarNotFoundException {
+    void givenCars_whenRequestingCarReplacement_thenGetNewCar() throws CarNotFoundException, CarModelOrBrandStringTooLongException {
         final Car firstCar = Car.builder().model("TestModel").brand("TestBrand").build();
         final Car secondCar = Car.builder().model("TestModel").brand("TestBrand").build();
         final CarCheckMappingRequest mappingRequest = CarCheckMappingRequest.builder()
