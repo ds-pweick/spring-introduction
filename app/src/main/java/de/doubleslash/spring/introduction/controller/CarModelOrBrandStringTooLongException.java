@@ -2,8 +2,10 @@ package de.doubleslash.spring.introduction.controller;
 
 public class CarModelOrBrandStringTooLongException extends Exception {
     /**
-     * Constructs a {@code CarModelOrBrandStringTooLong} with {@code null}
-     * as its error message string.
+     * Constructs a <code>CarModelOrBrandStringTooLongException</code> with the specified
+     * detail message.
+     *
+     * @param s the detail message
      */
 
     public CarModelOrBrandStringTooLongException(String s) {

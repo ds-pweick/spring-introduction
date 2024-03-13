@@ -2,16 +2,24 @@ package de.doubleslash.spring.introduction.controller;
 
 import de.doubleslash.spring.introduction.model.Car;
 import de.doubleslash.spring.introduction.model.CarCheckMappingRequest;
+import de.doubleslash.spring.introduction.model.MinIoFileHandler;
 import de.doubleslash.spring.introduction.repository.CarRepository;
+import io.minio.errors.*;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -20,6 +28,7 @@ import java.util.Optional;
 @Slf4j
 public class CarDealershipController {
     private final CarRepository repository;
+    private final List<String> allowedImageExtensions = List.of("jpg", "jpeg", "png");
 
     @GetMapping("/cars")
     public ResponseEntity<List<Car>> all() {
@@ -37,7 +46,8 @@ public class CarDealershipController {
     }
 
     @PostMapping("/cars/add")
-    public ResponseEntity<String> addCar(@Valid @NotNull @RequestBody Car car) throws CarModelOrBrandStringTooLongException {
+    public ResponseEntity<String> addCar(@Valid @NotNull @RequestBody Car car) throws
+            CarModelOrBrandStringTooLongException {
         if (!validateCarBrandAndModelStringLengths(car)) {
             throw new CarModelOrBrandStringTooLongException("Car model and/or brand name exceeds the character limit");
         }
@@ -46,8 +56,38 @@ public class CarDealershipController {
         return new ResponseEntity<>("Successfully added car %s %s".formatted(car.getBrand(), car.getModel()), HttpStatus.OK);
     }
 
+    @PostMapping(value = "/cars/add/image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<String> addCarImage(@NotNull @RequestParam("file") MultipartFile file) throws IOException,
+            ServerException, InsufficientDataException, ErrorResponseException, NoSuchAlgorithmException,
+            InvalidKeyException, InvalidResponseException, XmlParserException, InternalException,
+            InvalidFileUploadException {
+
+        // get filename as present on client system
+        String originalFilename = file.getOriginalFilename();
+
+        if (originalFilename == null || originalFilename.length() >= 255) {
+            throw new InvalidFileUploadException("Requested file upload has invalid name");
+        }
+
+        String[] substrings = originalFilename.split("\\.");
+        // just for easier access of last element
+        String fileExtension = Arrays.stream(substrings).toList().get(1);
+
+        // make sure that there is no trickery like file.php.jpg or sth like that
+        // and that file has no extension other than jpg, jpeg or png
+        if (substrings.length != 2 || !allowedImageExtensions.contains(fileExtension)) {
+            throw new InvalidFileUploadException("Requested file upload has invalid or prohibited file extension");
+        }
+
+        MinIoFileHandler.uploadFile("cars", file.getInputStream(),
+                file.getSize(), fileExtension);
+
+        return new ResponseEntity<>("Successfully uploaded image", HttpStatus.OK);
+    }
+
     @PostMapping("/cars/replace")
-    public ResponseEntity<String> replaceCar(@Valid @RequestBody CarCheckMappingRequest mappingRequest) throws CarNotFoundException, CarModelOrBrandStringTooLongException {
+    public ResponseEntity<String> replaceCar(@Valid @RequestBody CarCheckMappingRequest mappingRequest) throws
+            CarNotFoundException, CarModelOrBrandStringTooLongException {
         Car firstCar = mappingRequest.firstCar;
         Car secondCar = mappingRequest.secondCar;
 
@@ -95,4 +135,6 @@ public class CarDealershipController {
     private Boolean validateCarBrandAndModelStringLengths(Car car) {
         return car.getModel().length() <= 300 && car.getBrand().length() <= 100;
     }
+
+
 }

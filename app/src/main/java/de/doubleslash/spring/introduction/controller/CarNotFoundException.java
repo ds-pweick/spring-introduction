@@ -10,6 +10,12 @@ public class CarNotFoundException extends Exception {
         super();
     }
 
+    /**
+     * Constructs a <code>CarNotFoundException</code> with the specified
+     * detail message.
+     *
+     * @param s the detail message
+     */
     public CarNotFoundException(String s) {
         super(s);
     }

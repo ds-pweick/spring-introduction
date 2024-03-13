@@ -3,19 +3,26 @@ package de.doubleslash.spring.introduction.controller;
 import de.doubleslash.spring.introduction.model.Car;
 import de.doubleslash.spring.introduction.model.CarCheckMappingRequest;
 import de.doubleslash.spring.introduction.repository.CarRepository;
+import io.minio.errors.*;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.mock.web.MockMultipartFile;
 
+import java.io.IOException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class CarDealershipControllerTest {
@@ -45,6 +52,37 @@ class CarDealershipControllerTest {
         final String expected = "Car model and/or brand name exceeds the character limit";
 
         assertThrows(CarModelOrBrandStringTooLongException.class, () -> controller.addCar(car), expected);
+    }
+
+    @Test
+    void givenValidRequestToAddCarImage_whenAddingCarImage_thenReturnSuccessMessageString() throws ServerException, InvalidFileUploadException, InsufficientDataException, ErrorResponseException, IOException, NoSuchAlgorithmException, InvalidKeyException, InvalidResponseException, XmlParserException, InternalException {
+        final MockMultipartFile file =
+                new MockMultipartFile("file", "TestTitle.png",
+                        MediaType.MULTIPART_FORM_DATA_VALUE, new byte[1]);
+
+        final String expected = "Successfully uploaded image";
+
+        final ResponseEntity<String> result = controller.addCarImage(file);
+
+        assertThat(result.getBody()).isEqualTo(expected);
+    }
+
+    @Test
+    void givenInvalidRequestToAddCarImage_whenAddingCarImage_thenReturnErrorMessageString() {
+        final MockMultipartFile firstFile =
+                new MockMultipartFile("file", "TestTitle".repeat(500).concat(".png"),
+                        MediaType.MULTIPART_FORM_DATA_VALUE, new byte[1]);
+
+        final MockMultipartFile secondFile =
+                new MockMultipartFile("file", "TestTitle.exe.jpg",
+                        MediaType.MULTIPART_FORM_DATA_VALUE, new byte[1]);
+
+        final String firstExpected = "Requested file upload has invalid name";
+
+        final String secondExpected = "Requested file upload has invalid or prohibited file extension";
+
+        assertThrows(InvalidFileUploadException.class, () -> controller.addCarImage(firstFile), firstExpected);
+        assertThrows(InvalidFileUploadException.class, () -> controller.addCarImage(secondFile), secondExpected);
     }
 
     @Test

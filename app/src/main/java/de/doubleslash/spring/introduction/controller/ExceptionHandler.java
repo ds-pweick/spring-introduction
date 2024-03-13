@@ -1,6 +1,7 @@
 package de.doubleslash.spring.introduction.controller;
 
 
+import io.minio.errors.MinioException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -22,6 +23,18 @@ public class ExceptionHandler extends ResponseEntityExceptionHandler {
     public ResponseEntity<Object> handleCarModelOrBrandStringTooLongException(CarModelOrBrandStringTooLongException e, WebRequest req) {
         log.error(e.getMessage());
         return handleExceptionInternal(e, e.getMessage(), new HttpHeaders(), HttpStatus.BAD_REQUEST, req);
+    }
+
+    @org.springframework.web.bind.annotation.ExceptionHandler(InvalidFileUploadException.class)
+    public ResponseEntity<Object> handleMinioException(InvalidFileUploadException e, WebRequest req) {
+        log.error(e.getMessage());
+        return handleExceptionInternal(e, e.getMessage(), new HttpHeaders(), HttpStatus.BAD_REQUEST, req);
+    }
+
+    @org.springframework.web.bind.annotation.ExceptionHandler(MinioException.class)
+    public ResponseEntity<Object> handleMinioException(CarModelOrBrandStringTooLongException e, WebRequest req) {
+        log.error(e.getMessage());
+        return handleExceptionInternal(e, e.getMessage(), new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR, req);
     }
 }
 

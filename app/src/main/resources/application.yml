@@ -7,6 +7,10 @@ server:
   port: 9091
   http:
     port: 9090
+  servlet:
+    encoding:
+      charset: "UTF-8"
+      force: false
 
 spring:
   datasource:
