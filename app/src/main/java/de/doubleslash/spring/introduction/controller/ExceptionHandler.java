@@ -19,8 +19,8 @@ public class ExceptionHandler extends ResponseEntityExceptionHandler {
         return handleExceptionInternal(e, e.getMessage(), new HttpHeaders(), HttpStatus.NOT_FOUND, req);
     }
 
-    @org.springframework.web.bind.annotation.ExceptionHandler(CarModelOrBrandStringTooLongException.class)
-    public ResponseEntity<Object> handleCarModelOrBrandStringTooLongException(CarModelOrBrandStringTooLongException e, WebRequest req) {
+    @org.springframework.web.bind.annotation.ExceptionHandler(CarModelOrBrandStringInvalidException.class)
+    public ResponseEntity<Object> handleCarModelOrBrandStringTooLongException(CarModelOrBrandStringInvalidException e, WebRequest req) {
         log.error(e.getMessage());
         return handleExceptionInternal(e, e.getMessage(), new HttpHeaders(), HttpStatus.BAD_REQUEST, req);
     }
@@ -32,7 +32,7 @@ public class ExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
     @org.springframework.web.bind.annotation.ExceptionHandler(MinioException.class)
-    public ResponseEntity<Object> handleMinioException(CarModelOrBrandStringTooLongException e, WebRequest req) {
+    public ResponseEntity<Object> handleMinioException(CarModelOrBrandStringInvalidException e, WebRequest req) {
         log.error(e.getMessage());
         return handleExceptionInternal(e, e.getMessage(), new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR, req);
     }

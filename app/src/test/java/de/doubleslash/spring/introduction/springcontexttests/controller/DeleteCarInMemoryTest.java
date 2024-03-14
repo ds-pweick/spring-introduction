@@ -1,7 +1,7 @@
 package de.doubleslash.spring.introduction.springcontexttests.controller;
 
 import de.doubleslash.spring.introduction.controller.CarDealershipController;
-import de.doubleslash.spring.introduction.controller.CarModelOrBrandStringTooLongException;
+import de.doubleslash.spring.introduction.controller.CarModelOrBrandStringInvalidException;
 import de.doubleslash.spring.introduction.model.Car;
 import de.doubleslash.spring.introduction.repository.CarRepository;
 import de.doubleslash.spring.introduction.springcontexttests.setup.SpringInMemoryTest;
@@ -22,7 +22,7 @@ class DeleteCarInMemoryTest extends SpringInMemoryTest {
     private CarDealershipController controller;
 
     @Test
-    void givenCar_whenDeletingCar_thenDeleteCar() throws CarModelOrBrandStringTooLongException {
+    void givenCar_whenDeletingCar_thenDeleteCar() throws CarModelOrBrandStringInvalidException {
         Car car = Car.builder().model("TestModel").brand("TestBrand").build();
         controller.addCar(car);
         repository.deleteById(0L);

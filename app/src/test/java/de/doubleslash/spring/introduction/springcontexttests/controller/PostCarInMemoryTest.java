@@ -1,7 +1,7 @@
 package de.doubleslash.spring.introduction.springcontexttests.controller;
 
 import de.doubleslash.spring.introduction.controller.CarDealershipController;
-import de.doubleslash.spring.introduction.controller.CarModelOrBrandStringTooLongException;
+import de.doubleslash.spring.introduction.controller.CarModelOrBrandStringInvalidException;
 import de.doubleslash.spring.introduction.controller.CarNotFoundException;
 import de.doubleslash.spring.introduction.model.Car;
 import de.doubleslash.spring.introduction.model.CarCheckMappingRequest;
@@ -19,7 +19,7 @@ class PostCarInMemoryTest extends SpringInMemoryTest {
     private CarDealershipController controller;
 
     @Test
-    void givenCar_whenAddingCar_thenGetCar() throws CarModelOrBrandStringTooLongException {
+    void givenCar_whenAddingCar_thenGetCar() throws CarModelOrBrandStringInvalidException {
         final Car car = Car.builder().model("TestModel").brand("TestBrand").build();
 
         controller.addCar(car);
@@ -28,7 +28,7 @@ class PostCarInMemoryTest extends SpringInMemoryTest {
     }
 
     @Test
-    void givenCars_whenRequestingCarReplacement_thenGetNewCar() throws CarNotFoundException, CarModelOrBrandStringTooLongException {
+    void givenCars_whenRequestingCarReplacement_thenGetNewCar() throws CarNotFoundException, CarModelOrBrandStringInvalidException {
         final Car firstCar = Car.builder().model("TestModel").brand("TestBrand").build();
         final Car secondCar = Car.builder().model("TestModel").brand("TestBrand").build();
         final CarCheckMappingRequest mappingRequest = CarCheckMappingRequest.builder()
