@@ -11,7 +11,6 @@ import org.springframework.stereotype.Component;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 
 
@@ -34,7 +33,7 @@ public class CronTask {
                 oneDayAgo.format(formatter)
         ));
 
-        Instant oneDayAgoInstant = oneDayAgo.toInstant(ZoneOffset.of(ZoneId.systemDefault().getId()));
+        Instant oneDayAgoInstant = oneDayAgo.atZone(ZoneId.systemDefault()).toInstant();
         repository.deleteAllByDateBefore(oneDayAgoInstant);
 
         log.info("Cron job successful");

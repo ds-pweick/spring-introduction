@@ -18,7 +18,7 @@ import java.util.Map;
 public record MinIoFileHandler() {
     private static final MinioClient minioClient =
             MinioClient.builder()
-                    .endpoint("http://127.0.0.1:9000")
+                    .endpoint("http://spring-introduction-minio:9000")
                     .credentials("root", "password")
                     .build();
 

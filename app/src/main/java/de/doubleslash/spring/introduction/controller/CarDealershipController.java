@@ -41,7 +41,7 @@ public class CarDealershipController {
     public static String DELETE_CAR_BY_BRAND_NONE_DELETED_STRING = "No cars were deleted";
 
     private final CarRepository repository;
-    private final List<String> allowedImageExtensions = List.of("jpg", "jpeg", "png");
+    private final List<String> allowedImageExtensions = List.of("jpg", "jpeg", "png", "webp");
 
     private final JsonToCarConverter converter;
 
@@ -70,35 +70,6 @@ public class CarDealershipController {
 
         return new ResponseEntity<>(ADD_CAR_SUCCESS_STRING.formatted(car.getBrand(), car.getModel()), HttpStatus.OK);
     }
-
-    /*@PostMapping(value = "/cars/add/image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<String> addCarWithImage(@NotNull @RequestParam("file") MultipartFile file) throws IOException,
-            ServerException, InsufficientDataException, ErrorResponseException, NoSuchAlgorithmException,
-            InvalidKeyException, InvalidResponseException, XmlParserException, InternalException,
-            InvalidFileUploadException {
-
-        // get filename as present on client system
-        String originalFilename = file.getOriginalFilename();
-
-        if (originalFilename == null || originalFilename.length() >= 255) {
-            throw new InvalidFileUploadException("Requested file upload has invalid name");
-        }
-
-        String[] substrings = originalFilename.split("\\.");
-        // just for easier access of last element
-        String fileExtension = Arrays.stream(substrings).toList().get(1);
-
-        // make sure that there is no trickery like file.php.jpg or sth like that
-        // and that file has no extension other than jpg, jpeg or png
-        if (substrings.length != 2 || !allowedImageExtensions.contains(fileExtension)) {
-            throw new InvalidFileUploadException("Requested file upload has invalid or prohibited file extension");
-        }
-
-        MinIoFileHandler.uploadFile("cars", file.getInputStream(),
-                file.getSize(), fileExtension, );
-
-        return new ResponseEntity<>("Successfully uploaded image", HttpStatus.OK);
-    }*/
 
     @PostMapping(value = "/cars/addWithImage", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<String> addCarWithImage(@Valid @NotNull @RequestParam("file") MultipartFile file,

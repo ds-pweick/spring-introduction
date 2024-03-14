@@ -1,5 +1,6 @@
 package de.doubleslash.spring.introduction.model;
 
+import de.doubleslash.spring.introduction.spring.configuration.entity.Auditable;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
@@ -11,18 +12,18 @@ import java.util.Objects;
 
 @AllArgsConstructor
 @NoArgsConstructor(force = true)
-@Value
+@Data
 @Entity
 @Builder
-public class Car {
+public class Car extends Auditable {
     @Id
     @GeneratedValue
-    Long id;
-    String model;
-    String brand;
-
+    private Long id;
+    // jpa won't change the value after instantiation, can be final
+    private final String brand;
+    private final String model;
     @CreatedDate
-    Instant date;
+    private Instant date;
 
     public boolean equals(Car car) {
         return hashCode() == car.hashCode();

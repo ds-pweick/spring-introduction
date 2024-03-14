@@ -1,19 +1,19 @@
 services:
-#  web:
-#    image: "spring-introduction"
-#    ports:
-#      - 9090:9090
-#      - 9091:9091
-#    depends_on:
-#      - db1
-#      - db2
-#    environment:
-#      DATABASE_URL: jdbc:postgresql://spring-introduction-postgres:5432/springintroduction
+  web:
+    image: "spring-introduction"
+    ports:
+      - 9090:9090
+      - 9091:9091
+    depends_on:
+      - db1
+      - db2
+    environment:
+      DATABASE_URL: jdbc:postgresql://spring-introduction-postgres:5432/springintroduction
 
   db1:
     container_name: spring-introduction-postgres
     image: postgres
-    #restart: always
+    restart: always
     ports:
       - 5432:5432
     environment:
@@ -24,7 +24,7 @@ services:
   db2:
     container_name: spring-introduction-minio
     image: quay.io/minio/minio
-    #restart: always
+    restart: always
     ports:
       - 9000:9000
       - 9001:9001
