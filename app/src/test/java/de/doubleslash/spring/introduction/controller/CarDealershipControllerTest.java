@@ -4,8 +4,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import de.doubleslash.spring.introduction.model.Car;
 import de.doubleslash.spring.introduction.model.JsonStringToInstance;
 import de.doubleslash.spring.introduction.model.MinIoFileHandler;
+import de.doubleslash.spring.introduction.repository.CarImageRepository;
 import de.doubleslash.spring.introduction.repository.CarRepository;
-import io.minio.errors.MinioException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -15,9 +15,6 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mock.web.MockMultipartFile;
 
-import java.io.IOException;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
 import java.util.List;
 import java.util.Optional;
 
@@ -29,7 +26,10 @@ import static org.mockito.Mockito.when;
 class CarDealershipControllerTest {
 
     @Mock
-    private CarRepository repository;
+    private CarRepository carRepository;
+
+    @Mock
+    private CarImageRepository carImageRepository;
 
     @InjectMocks
     private CarDealershipController controller;
@@ -94,7 +94,7 @@ class CarDealershipControllerTest {
     @Test
     void givenRequestToFetchAllCars_whenFetchingAllCars_thenReturnCarList() {
         final List<Car> expected = List.of(Car.builder().model("TestModel").brand("TestBrand").build());
-        when(repository.findAll()).thenReturn(expected);
+        when(carRepository.findAll()).thenReturn(expected);
 
         final ResponseEntity<List<Car>> result = controller.allCars();
 
@@ -105,7 +105,7 @@ class CarDealershipControllerTest {
     @Test
     void givenCarId_whenGetCarById_thenReturnCarAsString() throws CarNotFoundException {
         final Car expected = Car.builder().id(1L).model("TestModel").brand("TestBrand").build();
-        when(repository.findById(1L)).thenReturn(Optional.of(expected));
+        when(carRepository.findById(1L)).thenReturn(Optional.of(expected));
 
         final Car result = controller.get(1L).getBody();
 
@@ -115,7 +115,7 @@ class CarDealershipControllerTest {
 
     @Test
     void givenNonExistentCarId_whenGetCarById_thenReturnErrorMessageString() {
-        when(repository.findById(1L)).thenReturn(Optional.empty());
+        when(carRepository.findById(1L)).thenReturn(Optional.empty());
 
         assertThrows(CarNotFoundException.class, () -> controller.get(1L));
     }
@@ -132,7 +132,7 @@ class CarDealershipControllerTest {
         final Car car = Car.builder().id(1L).model("TestModel").brand("TestBrand").build();
         final String expected = CarDealershipController.REPLACE_CAR_SUCCESS_STRING;
 
-        when(repository.findById(firstCarId)).thenReturn(Optional.of(car));
+        when(carRepository.findById(firstCarId)).thenReturn(Optional.of(car));
         when(converter.convert(secondCarString, Car.class)).thenReturn(car);
 
         final ResponseEntity<String> result = controller.replaceCar(1L, secondCarString, file);
@@ -150,19 +150,19 @@ class CarDealershipControllerTest {
 
         final String expected = CarDealershipController.CAR_NOT_FOUND_STRING.formatted(1L);
 
-        when(repository.findById(firstCarId)).thenReturn(Optional.empty());
+        when(carRepository.findById(firstCarId)).thenReturn(Optional.empty());
 
         assertThrows(CarNotFoundException.class, () -> controller.replaceCar(firstCarId, secondCarString, file), expected);
     }
 
     @Test
-    void givenValidRequestToDeleteCarWithImage_whenDeletingCar_thenReturnSuccessMessageString() throws CarNotFoundException,
-            MinioException, IOException, NoSuchAlgorithmException, InvalidKeyException {
+    void givenValidRequestToDeleteCarWithImage_whenDeletingCar_thenReturnSuccessMessageString()
+            throws Exception {
 
         final String expected = CarDealershipController.DELETE_CAR_SUCCESS_STRING;
-        final Car car = Car.builder().id(1L).model("TestModel").brand("TestBrand").imageObjectName("TestTitle.png").build();
+        final Car car = Car.builder().id(1L).model("TestModel").brand("TestBrand").carImageList(List.of()).build();
 
-        when(repository.findById(1L)).thenReturn(Optional.of(car));
+        when(carRepository.findById(1L)).thenReturn(Optional.of(car));
 
         final ResponseEntity<String> result = controller.deleteCar(1L);
 
@@ -173,17 +173,16 @@ class CarDealershipControllerTest {
     @Test
     void givenInvalidRequestToDeleteCar_whenDeletingCar_thenReturnErrorMessageString() {
         final String expected = CarDealershipController.CAR_NOT_FOUND_STRING.formatted(1L);
-        when(repository.findById(1L)).thenReturn(Optional.empty());
+        when(carRepository.findById(1L)).thenReturn(Optional.empty());
         assertThrows(CarNotFoundException.class, () -> controller.deleteCar(1L), expected);
     }
 
     @Test
-    void givenValidDeleteCarsByBrandRequest_whenDeletingCars_thenReturnCarList() throws MinioException, IOException,
-            NoSuchAlgorithmException, InvalidKeyException {
+    void givenValidDeleteCarsByBrandRequest_whenDeletingCars_thenReturnCarList() throws Exception {
         final String expected = CarDealershipController.DELETE_CAR_BY_BRAND_SUCCESS_STRING.formatted(2, "VW");
-        final Car firstCar = Car.builder().brand("VW").imageObjectName("TestTitle1.png").build();
-        final Car secondCar = Car.builder().brand("VW").imageObjectName("TestTitle2.png").build();
-        when(repository.deleteCarByBrand("VW")).thenReturn(List.of(firstCar, secondCar));
+        final Car firstCar = Car.builder().brand("VW").carImageList(List.of()).build();
+        final Car secondCar = Car.builder().brand("VW").carImageList(List.of()).build();
+        when(carRepository.deleteCarByBrand("VW")).thenReturn(List.of(firstCar, secondCar));
 
         final ResponseEntity<String> result = controller.deleteCarByBrand("VW");
 

@@ -3,6 +3,7 @@ package de.doubleslash.spring.introduction.model;
 import de.doubleslash.spring.introduction.config.MinIoConfiguration;
 import io.minio.*;
 import io.minio.errors.*;
+import lombok.extern.slf4j.Slf4j;
 import org.bouncycastle.util.encoders.Hex;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.core.io.ByteArrayResource;
@@ -19,6 +20,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
+@Slf4j
 public class MinIoFileHandler {
 
     private final MinioClient minioClient;
@@ -87,6 +89,8 @@ public class MinIoFileHandler {
             throw new MinioException("Something went wrong.");
         }
 
+        log.info("Removing file %s".formatted(filename));
+
         minioClient.removeObject(RemoveObjectArgs.builder().bucket(bucketName).object(filename).build());
     }
 
@@ -96,7 +100,7 @@ public class MinIoFileHandler {
             throw new MinioException("Something went wrong.");
         }
 
-        for(String filename: filenameList) {
+        for (String filename : filenameList) {
             minioClient.removeObject(RemoveObjectArgs.builder().bucket(bucketName).object(filename).build());
         }
     }

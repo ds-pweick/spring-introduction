@@ -1,13 +1,18 @@
 package de.doubleslash.spring.introduction.model;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import de.doubleslash.spring.introduction.spring.configuration.entity.Auditable;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
-import lombok.*;
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 import org.springframework.data.annotation.CreatedDate;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.Objects;
 
 @AllArgsConstructor
@@ -24,11 +29,14 @@ public class Car extends Auditable {
     private Long id;
     @CreatedDate
     private Instant date;
-    private String imageObjectName;
+    @OneToMany(mappedBy = "associatedCar", fetch = FetchType.EAGER)
+    @OnDelete(action = OnDeleteAction.CASCADE)
+    @JsonManagedReference
+    private List<CarImage> carImageList;
 
     public boolean equals(Car car) {
         return Objects.equals(this.id, car.getId()) && Objects.equals(this.brand, car.getBrand())
-                && Objects.equals(this.model, car.getModel()) && Objects.equals(this.imageObjectName, car.getImageObjectName());
+                && Objects.equals(this.model, car.getModel());
     }
 
     @Override
@@ -38,8 +46,7 @@ public class Car extends Auditable {
                 ", \"brand\":\"" + brand + "\"" +
                 ", \"model\":\"" + model + "\"" +
                 ", \"date\":\"" + date + "\"" +
-                ", \"imageObjectName\":\"" + imageObjectName + "\"" +
-                "}";
+                ", \"carImageList\":" + carImageList + "}";
     }
 
     public int hashCode() {

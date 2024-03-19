@@ -21,7 +21,7 @@ import org.springframework.test.context.ActiveProfiles;
 public abstract class SpringInMemoryTest {
 
     @Autowired
-    private CarRepository repository;
+    private CarRepository carRepository;
 
     @BeforeEach
     public void beforeEach() {
@@ -34,8 +34,10 @@ public abstract class SpringInMemoryTest {
         System.out.println("Test finished: " + this.getClass().getSimpleName());
     }
 
-    private void cleanupDb(){
-        repository.deleteAllInBatch();
+    private void cleanupDb() {
+        System.out.println("Cleaning up db...");
+        carRepository.deleteAllInBatch();
+        System.out.println("Cleaned up db...");
     }
 
 }

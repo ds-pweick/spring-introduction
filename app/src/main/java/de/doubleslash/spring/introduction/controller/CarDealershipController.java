@@ -2,8 +2,10 @@ package de.doubleslash.spring.introduction.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import de.doubleslash.spring.introduction.model.Car;
+import de.doubleslash.spring.introduction.model.CarImage;
 import de.doubleslash.spring.introduction.model.JsonStringToInstance;
 import de.doubleslash.spring.introduction.model.MinIoFileHandler;
+import de.doubleslash.spring.introduction.repository.CarImageRepository;
 import de.doubleslash.spring.introduction.repository.CarRepository;
 import io.minio.errors.*;
 import jakarta.transaction.Transactional;
@@ -39,7 +41,9 @@ public class CarDealershipController {
             " too long, or contains an extension which is prohibited.";
     public final static String FILE_UPLOAD_INTERNAL_ERROR_FAILURE_STRING = "File upload failed due to internal error.";
     public final static String CARS_BUCKET = "car-images";
+    public static final String ENDPOINT_RECEIVED_INVALID_JSON = "Endpoint %s received invalid JSON";
     private final static String CARS_ROOT = "/cars";
+    private final static String IMAGES_ROOT = "/images";
     private final static String CARS_ROOT_WITH_IMAGE = CARS_ROOT + "/with-image";
     public static String CAR_NOT_FOUND_STRING = "No car with requested id %d found";
     public static String REPLACE_CAR_SUCCESS_STRING = "Replacement successful";
@@ -47,7 +51,9 @@ public class CarDealershipController {
     public static String DELETE_CAR_BY_BRAND_SUCCESS_STRING = "Successfully deleted %d car(s) of brand %s";
     public static String DELETE_CAR_BY_BRAND_NONE_DELETED_NEUTRAL_STRING = "No cars were deleted";
 
-    private final CarRepository repository;
+    private final CarRepository carRepository;
+
+    private final CarImageRepository carImageRepository;
 
     private final JsonStringToInstance converter;
 
@@ -55,12 +61,17 @@ public class CarDealershipController {
 
     @GetMapping(CARS_ROOT)
     public ResponseEntity<List<Car>> allCars() {
-        return new ResponseEntity<>(repository.findAll(), HttpStatus.OK);
+        return new ResponseEntity<>(carRepository.findAll(), HttpStatus.OK);
+    }
+
+    @GetMapping(IMAGES_ROOT)
+    public ResponseEntity<List<CarImage>> allCarImages() {
+        return new ResponseEntity<>(carImageRepository.findAll(), HttpStatus.OK);
     }
 
     @GetMapping(CARS_ROOT + "/{id}")
     public ResponseEntity<Car> get(@Valid @NotNull @PathVariable long id) throws CarNotFoundException {
-        Optional<Car> optionalCar = repository.findById(id);
+        Optional<Car> optionalCar = carRepository.findById(id);
         if (optionalCar.isEmpty()) {
             throw new CarNotFoundException(CAR_NOT_FOUND_STRING.formatted(id));
         }
@@ -68,24 +79,21 @@ public class CarDealershipController {
         return new ResponseEntity<>(optionalCar.get(), HttpStatus.OK);
     }
 
-    @GetMapping(value = CARS_ROOT + "/{id}/with-image", produces = {MediaType.IMAGE_PNG_VALUE,
-            MediaType.IMAGE_JPEG_VALUE, "image/webp"
-    })
+    @GetMapping(value = IMAGES_ROOT + "/{imageObjectName}", produces = {MediaType.IMAGE_PNG_VALUE,
+            MediaType.IMAGE_JPEG_VALUE, "image/webp"})
     @ResponseBody
-    public ResponseEntity<ByteArrayResource> getImageForCar(@Valid @NotNull @PathVariable long id) throws
-            CarNotFoundException, MinioException, IOException, NoSuchAlgorithmException, InvalidKeyException {
+    public ResponseEntity<ByteArrayResource> getImage(@Valid @NotNull @PathVariable String imageObjectName) throws
+            Exception {
 
-        Optional<Car> optionalCar = repository.findById(id);
-        if (optionalCar.isEmpty()) {
-            throw new CarNotFoundException(CAR_NOT_FOUND_STRING.formatted(id));
+        Pair<Boolean, String> fileValidationResult = validateImageFilename(imageObjectName);
+
+        if (!fileValidationResult.getFirst()) {
+            throw new InvalidFileRequestException(FILE_UPLOAD_INVALID_NAME_FAILURE_STRING);
         }
 
-        ByteArrayResource resource = fileHandler.downloadFile(CARS_BUCKET, optionalCar.get().getImageObjectName());
+        ByteArrayResource resource = fileHandler.downloadFile(CARS_BUCKET, imageObjectName);
 
-        AllowedExtension fileExtension = AllowedExtension.valueOf(optionalCar.get().getImageObjectName()
-                .split("\\.")[1]);
-
-        MediaType mediaType = switch (fileExtension) {
+        MediaType mediaType = switch (AllowedExtension.valueOf(fileValidationResult.getSecond())) {
             case png -> MediaType.IMAGE_PNG;
             case jpg, jpeg -> MediaType.IMAGE_JPEG;
             case webp -> MediaType.valueOf("image/webp");
@@ -94,8 +102,9 @@ public class CarDealershipController {
         return ResponseEntity.ok().contentType(mediaType).contentLength(resource.contentLength()).body(resource);
     }
 
-    @PostMapping(value = CARS_ROOT_WITH_IMAGE, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<String> addCar(@Valid @NotNull @RequestParam("car") String carString, @Valid @NotNull @RequestParam("file") MultipartFile file)
+    @PostMapping(value = CARS_ROOT + "/add", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<String> addCar(@Valid @NotNull @RequestParam("car") String carString,
+                                         @Valid @NotNull @RequestParam("file") MultipartFile file)
             throws InvalidFileRequestException, CarModelOrBrandStringInvalidException {
 
         // car is in json, need to use converter because of multipart content type
@@ -106,7 +115,7 @@ public class CarDealershipController {
                 throw new CarModelOrBrandStringInvalidException(MODEL_OR_BRAND_INVALID_STRING);
             }
         } catch (JsonProcessingException e) {
-            log.error("Endpoint %s received invalid input for the car's JSON".formatted(CARS_ROOT_WITH_IMAGE), e);
+            log.error(ENDPOINT_RECEIVED_INVALID_JSON.formatted(CARS_ROOT_WITH_IMAGE), e);
             return new ResponseEntity<>(CAR_JSON_PARSE_FAILURE_STRING, HttpStatus.BAD_REQUEST);
         }
 
@@ -118,14 +127,13 @@ public class CarDealershipController {
                                              @Valid @NotNull @RequestParam("secondCar") String carString,
                                              @Valid @NotNull @RequestParam("secondCarFile") MultipartFile file) throws Exception {
 
-        Optional<Car> optionalCar = repository.findById(firstCarId);
+        Optional<Car> optionalCar = carRepository.findById(firstCarId);
 
         Car secondCar;
         try {
             secondCar = converter.convert(carString, Car.class);
         } catch (JsonProcessingException e) {
-            log.error("Endpoint %s received invalid input for the second car's JSON"
-                    .formatted(CARS_ROOT + "/replace"), e);
+            log.error(ENDPOINT_RECEIVED_INVALID_JSON.formatted(CARS_ROOT + "/replace"), e);
             return new ResponseEntity<>(CAR_JSON_PARSE_FAILURE_STRING, HttpStatus.BAD_REQUEST);
         }
 
@@ -135,14 +143,15 @@ public class CarDealershipController {
             throw new CarModelOrBrandStringInvalidException(MODEL_OR_BRAND_INVALID_STRING);
         }
 
-        repository.deleteById(firstCarId);
-        fileHandler.deleteFile(CARS_BUCKET, optionalCar.get().getImageObjectName());
+        carRepository.deleteById(firstCarId);
 
         return uploadIfValidated(file, secondCar, REPLACE_CAR_SUCCESS_STRING);
     }
 
-    private ResponseEntity<String> uploadIfValidated(MultipartFile file, Car car, String responseText) throws InvalidFileRequestException {
-        Pair<Boolean, String> fileValidationResult = validateUploadedImageFile(file);
+    private ResponseEntity<String> uploadIfValidated(MultipartFile file, Car car, String responseText)
+            throws InvalidFileRequestException {
+
+        Pair<Boolean, String> fileValidationResult = validateImageFilename(file.getOriginalFilename());
 
         if (!fileValidationResult.getFirst()) {
             throw new InvalidFileRequestException(FILE_UPLOAD_INVALID_NAME_FAILURE_STRING);
@@ -151,10 +160,11 @@ public class CarDealershipController {
         try (InputStream inputStream = file.getInputStream()) {
             String savedFilename = fileHandler.uploadFile(CARS_BUCKET, inputStream,
                     file.getSize(), fileValidationResult.getSecond());
-
             // now that image object name is known, set property and save
-            car.setImageObjectName(savedFilename);
-            repository.save(car);
+            CarImage carImage = new CarImage(car, savedFilename, fileHandler, CARS_BUCKET);
+
+            carRepository.save(car);
+            carImageRepository.save(carImage);
         } catch (IOException | ServerException | InsufficientDataException | ErrorResponseException |
                  NoSuchAlgorithmException | InvalidKeyException | InvalidResponseException | XmlParserException |
                  InternalException e) {
@@ -166,30 +176,36 @@ public class CarDealershipController {
     }
 
     @DeleteMapping(CARS_ROOT + "/{id}")
-    public ResponseEntity<String> deleteCar(@Valid @NotNull @PathVariable Long id) throws CarNotFoundException,
-            MinioException, IOException, NoSuchAlgorithmException, InvalidKeyException {
-        Optional<Car> optionalCar = repository.findById(id);
+    public ResponseEntity<String> deleteCar(@Valid @NotNull @PathVariable Long id) throws Exception {
+        Optional<Car> optionalCar = carRepository.findById(id);
         if (optionalCar.isEmpty()) {
             throw new CarNotFoundException(CAR_NOT_FOUND_STRING.formatted(id));
         }
 
-        String associatedImageObjectName = optionalCar.get().getImageObjectName();
+        carRepository.deleteById(id);
 
-        repository.deleteById(id);
-        fileHandler.deleteFile(CARS_BUCKET, associatedImageObjectName);
+        List<String> associatedImageObjects = optionalCar.get().getCarImageList().stream()
+                .map(CarImage::getImageObjectName).toList();
+        fileHandler.deleteMultiple(CARS_BUCKET, associatedImageObjects);
 
         return new ResponseEntity<>(DELETE_CAR_SUCCESS_STRING, HttpStatus.OK);
     }
 
     @DeleteMapping(CARS_ROOT + "/brand/{brand}")
     @Transactional
-    public ResponseEntity<String> deleteCarByBrand(@Valid @NotNull @PathVariable String brand) throws MinioException,
-            IOException, NoSuchAlgorithmException, InvalidKeyException {
+    public ResponseEntity<String> deleteCarByBrand(@Valid @NotNull @PathVariable String brand) throws Exception {
         String responseText;
-        List<Car> deleted = repository.deleteCarByBrand(brand);
+        List<Car> deleted = carRepository.deleteCarByBrand(brand);
 
         if (!deleted.isEmpty()) {
-            fileHandler.deleteMultiple(CARS_BUCKET, deleted.stream().map(Car::getImageObjectName).toList());
+            List<List<String>> imageObjectListList = deleted.stream()
+                    .map(Car::getCarImageList)
+                    .map(carImageList -> carImageList.stream()
+                            .map(CarImage::getImageObjectName).toList())
+                    .toList();
+            for (List<String> imageObjectList : imageObjectListList) {
+                fileHandler.deleteMultiple(CARS_BUCKET, imageObjectList);
+            }
             responseText = DELETE_CAR_BY_BRAND_SUCCESS_STRING.formatted(deleted.size(), brand);
         } else {
             responseText = DELETE_CAR_BY_BRAND_NONE_DELETED_NEUTRAL_STRING;
@@ -202,16 +218,13 @@ public class CarDealershipController {
      * Validates name of uploaded image file. Returns the validation result and, if result is <code>True</code>,
      * the extension of the valid file. Otherwise, the second member of the <code>Pair</code> will be an empty String.
      */
-    private Pair<Boolean, String> validateUploadedImageFile(MultipartFile file) {
+    private Pair<Boolean, String> validateImageFilename(String filename) {
 
-        // get filename as present on client system
-        String originalFilename = file.getOriginalFilename();
-
-        if (originalFilename == null || originalFilename.isEmpty() || originalFilename.length() >= 255) {
+        if (filename == null || filename.isEmpty() || filename.length() >= 255) {
             return Pair.of(false, "");
         }
 
-        String[] substrings = originalFilename.split("\\.");
+        String[] substrings = filename.split("\\.");
         // just for easier access of last element
         String fileExtension = substrings[1];
 

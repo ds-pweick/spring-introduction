@@ -1,6 +1,7 @@
 services:
   web:
     image: "spring-introduction"
+    restart: always
     ports:
       - 9090:9090
       - 9091:9091
