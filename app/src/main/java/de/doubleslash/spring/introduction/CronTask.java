@@ -1,5 +1,6 @@
 package de.doubleslash.spring.introduction;
 
+import de.doubleslash.spring.introduction.model.Car;
 import de.doubleslash.spring.introduction.repository.CarRepository;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -12,6 +13,7 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 
 
 @AllArgsConstructor
@@ -34,9 +36,9 @@ public class CronTask {
         ));
 
         Instant oneDayAgoInstant = oneDayAgo.atZone(ZoneId.systemDefault()).toInstant();
-        repository.deleteAllByDateBefore(oneDayAgoInstant);
+        List<Car> deletedCars = repository.deleteAllByDateBefore(oneDayAgoInstant);
 
-        log.info("Cron job successful");
+        log.info("Cron job successful - deleted %d car(s) from database".formatted(deletedCars.size()));
     }
 
 }
