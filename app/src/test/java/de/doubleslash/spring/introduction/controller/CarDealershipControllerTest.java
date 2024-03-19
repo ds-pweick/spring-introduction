@@ -1,10 +1,11 @@
 package de.doubleslash.spring.introduction.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import de.doubleslash.spring.introduction.model.Car;
-import de.doubleslash.spring.introduction.model.CarCheckMappingRequest;
-import de.doubleslash.spring.introduction.model.JsonToCarConverter;
+import de.doubleslash.spring.introduction.model.JsonStringToInstance;
+import de.doubleslash.spring.introduction.model.MinIoFileHandler;
 import de.doubleslash.spring.introduction.repository.CarRepository;
-import io.minio.errors.*;
+import io.minio.errors.MinioException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -22,7 +23,6 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -35,54 +35,41 @@ class CarDealershipControllerTest {
     private CarDealershipController controller;
 
     @Mock
-    private JsonToCarConverter converter;
+    private JsonStringToInstance converter;
+
+    @Mock
+    private MinIoFileHandler fileHandler;
 
     @Test
-    void givenValidRequestToAddCar_whenAddingCar_thenReturnSuccessMessageString() throws CarModelOrBrandStringInvalidException {
-        final Car car = Car.builder().model("TestModel").brand("TestBrand").build();
+    void givenValidRequestToAddCar_whenAddingCar_thenReturnSuccessMessageString() throws CarModelOrBrandStringInvalidException,
+            InvalidFileRequestException, JsonProcessingException {
+        final String carString = "{\"brand\":\"TestBrand\",\"model\":\"TestModel\"}";
+        final MockMultipartFile file = new MockMultipartFile("file", "TestTitle.png",
+                MediaType.MULTIPART_FORM_DATA_VALUE, new byte[1]);
+
+        final Car car = Car.builder().id(1L).model("TestModel").brand("TestBrand").build();
+
         final String expected = CarDealershipController.ADD_CAR_SUCCESS_STRING.formatted("TestBrand", "TestModel");
 
-        when(repository.save(car)).thenReturn(car);
+        when(converter.convert(carString, Car.class)).thenReturn(car);
 
-        final ResponseEntity<String> result = controller.addCar(car);
-
-        assertThat(result.hasBody()).isTrue();
-        assertThat(result.getBody()).isEqualTo(expected);
-    }
-
-    @Test
-    void givenInvalidRequestToAddCar_whenAddingCar_thenReturnErrorMessageString() {
-        final Car car = Car.builder().model("TestModel".repeat(500)).brand("TestBrand".repeat(500)).build();
-        final String expected = CarDealershipController.MODEL_OR_BRAND_INVALID_STRING;
-
-        assertThrows(CarModelOrBrandStringInvalidException.class, () -> controller.addCar(car), expected);
-    }
-
-    @Test
-    void givenValidRequestToAddCarImage_whenAddingCarImage_thenReturnSuccessMessageString() throws ServerException,
-            InvalidFileUploadException, InsufficientDataException, ErrorResponseException, IOException,
-            NoSuchAlgorithmException, InvalidKeyException, InvalidResponseException, XmlParserException,
-            InternalException, CarModelOrBrandStringInvalidException {
-
-        final MockMultipartFile file =
-                new MockMultipartFile("file", "TestTitle.png",
-                        MediaType.MULTIPART_FORM_DATA_VALUE, new byte[1]);
-
-        final Car car = Car.builder().id(0L).model("TestModel").brand("TestBrand").build();
-        final String carString = "{\"brand\":\"TestBrand\",\"model\":\"TestModel\"}";
-
-        final String expected = CarDealershipController.FILE_UPLOAD_SUCCESS_STRING;
-
-        when(repository.save(car)).thenReturn(car);
-        when(converter.convert(carString)).thenReturn(car);
-
-        final ResponseEntity<String> result = controller.addCarWithImage(file, carString);
+        final ResponseEntity<String> result = controller.addCar(carString, file);
 
         assertThat(result.getBody()).isEqualTo(expected);
     }
 
     @Test
-    void givenInvalidRequestToAddCarImage_whenAddingCarImage_thenReturnErrorMessageString() {
+    void givenInvalidRequestToAddCar_whenValidatingCarBrand_thenReturnErrorMessageString() {
+        final String carString = "{\"brand\":\"" + "TestBrand".repeat(500) + "\",\"model\":\"TestModel\"}";
+        final MockMultipartFile file = new MockMultipartFile("file", "TestTitle.png",
+                MediaType.MULTIPART_FORM_DATA_VALUE, new byte[1]);
+
+        assertThrows(CarModelOrBrandStringInvalidException.class, () -> controller.addCar(carString, file),
+                CarDealershipController.MODEL_OR_BRAND_INVALID_STRING);
+    }
+
+    @Test
+    void givenInvalidRequestToAddCar_whenValidatingMultipartFile_thenReturnErrorMessageString() throws JsonProcessingException {
         // file name >= 255 characters
         final MockMultipartFile firstFile =
                 new MockMultipartFile("file", "TestTitle".repeat(500).concat(".png"),
@@ -96,25 +83,23 @@ class CarDealershipControllerTest {
         final String carString = "{\"brand\":\"TestBrand\",\"model\":\"TestModel\"}";
         final Car car = Car.builder().id(0L).model("TestModel").brand("TestBrand").build();
 
-        final String expected = CarDealershipController.FILE_UPLOAD_FAILURE_STRING;
+        final String expected = CarDealershipController.FILE_UPLOAD_INVALID_NAME_FAILURE_STRING;
 
-        when(repository.save(car)).thenReturn(car);
-        when(converter.convert(carString)).thenReturn(car);
+        when(converter.convert(carString, Car.class)).thenReturn(car);
 
-        assertThrows(InvalidFileUploadException.class, () -> controller.addCarWithImage(firstFile, carString), expected);
-        assertThrows(InvalidFileUploadException.class, () -> controller.addCarWithImage(secondFile, carString), expected);
+        assertThrows(InvalidFileRequestException.class, () -> controller.addCar(carString, firstFile), expected);
+        assertThrows(InvalidFileRequestException.class, () -> controller.addCar(carString, secondFile), expected);
     }
 
     @Test
-    void givenRequestToFetchAllCars_whenFetchingCars_thenReturnCarList() {
+    void givenRequestToFetchAllCars_whenFetchingAllCars_thenReturnCarList() {
         final List<Car> expected = List.of(Car.builder().model("TestModel").brand("TestBrand").build());
         when(repository.findAll()).thenReturn(expected);
 
-        final ResponseEntity<List<Car>> result = controller.all();
+        final ResponseEntity<List<Car>> result = controller.allCars();
 
         assertThat(result.hasBody()).isTrue();
         assertThat(result.getBody()).isEqualTo(expected);
-        verify(repository).findAll();
     }
 
     @Test
@@ -122,10 +107,10 @@ class CarDealershipControllerTest {
         final Car expected = Car.builder().id(1L).model("TestModel").brand("TestBrand").build();
         when(repository.findById(1L)).thenReturn(Optional.of(expected));
 
-        final ResponseEntity<String> result = controller.get(1L);
+        final Car result = controller.get(1L).getBody();
 
-        assertThat(result.hasBody()).isTrue();
-        assertThat(result.getBody()).isEqualTo(expected.toString());
+        assertThat(result).isNotNull();
+        assertThat(result.equals(expected)).isTrue();
     }
 
     @Test
@@ -136,42 +121,48 @@ class CarDealershipControllerTest {
     }
 
     @Test
-    void givenValidCarCheckMappingRequest_whenReplacingCar_thenReturnSuccessMessageString() throws CarNotFoundException, CarModelOrBrandStringInvalidException {
-        final Car firstCar = Car.builder().id(1L).model("TestModel").brand("TestBrand").build();
-        final Car secondCar = Car.builder().model("TestModel2").brand("TestBrand2").build();
-        final CarCheckMappingRequest mappingRequest = CarCheckMappingRequest.builder()
-                .firstCar(firstCar).secondCar(secondCar).build();
+    void givenValidReplacementRequest_whenReplacingCar_thenReturnSuccessMessageString() throws Exception {
+
+        final long firstCarId = 1;
+        final String secondCarString = "{\"brand\":\"TestBrand\",\"model\":\"TestModel\"}";
+        final MockMultipartFile file =
+                new MockMultipartFile("file", "TestTitle.png",
+                        MediaType.MULTIPART_FORM_DATA_VALUE, new byte[1]);
+
+        final Car car = Car.builder().id(1L).model("TestModel").brand("TestBrand").build();
         final String expected = CarDealershipController.REPLACE_CAR_SUCCESS_STRING;
 
-        when(repository.existsById(firstCar.getId())).thenReturn(true);
+        when(repository.findById(firstCarId)).thenReturn(Optional.of(car));
+        when(converter.convert(secondCarString, Car.class)).thenReturn(car);
 
-        final ResponseEntity<String> result = controller.replaceCar(mappingRequest);
+        final ResponseEntity<String> result = controller.replaceCar(1L, secondCarString, file);
 
-        assertThat(result.hasBody()).isTrue();
         assertThat(result.getBody()).isEqualTo(expected);
     }
 
     @Test
-    void givenInvalidCarCheckMappingRequest_whenReplacingCar_thenReturnErrorMessageString() {
-        final Car firstCar = Car.builder().id(1L).model("TestModel").brand("TestBrand").build();
-        final Car secondCar = Car.builder().model("TestModel2").brand("TestBrand2").build();
-        final CarCheckMappingRequest mappingRequest = CarCheckMappingRequest.builder()
-                .firstCar(firstCar).secondCar(secondCar).build();
+    void givenInvalidReplacementRequest_whenValidatingCarToReplace_thenReturnErrorMessageString() {
+        final long firstCarId = 1;
+        final String secondCarString = "{\"brand\":\"TestBrand\",\"model\":\"TestModel\"}";
+        final MockMultipartFile file =
+                new MockMultipartFile("file", "TestTitle.png",
+                        MediaType.MULTIPART_FORM_DATA_VALUE, new byte[1]);
+
         final String expected = CarDealershipController.CAR_NOT_FOUND_STRING.formatted(1L);
 
-        System.out.println(firstCar);
-        System.out.println(secondCar);
+        when(repository.findById(firstCarId)).thenReturn(Optional.empty());
 
-        when(repository.existsById(firstCar.getId())).thenReturn(false);
-
-        assertThrows(CarNotFoundException.class, () -> controller.replaceCar(mappingRequest), expected);
+        assertThrows(CarNotFoundException.class, () -> controller.replaceCar(firstCarId, secondCarString, file), expected);
     }
 
     @Test
-    void givenValidRequestToDeleteCar_whenDeletingCar_thenReturnSuccessMessageString() throws CarNotFoundException {
-        final String expected = CarDealershipController.DELETE_CAR_SUCCESS_STRING;
+    void givenValidRequestToDeleteCarWithImage_whenDeletingCar_thenReturnSuccessMessageString() throws CarNotFoundException,
+            MinioException, IOException, NoSuchAlgorithmException, InvalidKeyException {
 
-        when(repository.existsById(1L)).thenReturn(true);
+        final String expected = CarDealershipController.DELETE_CAR_SUCCESS_STRING;
+        final Car car = Car.builder().id(1L).model("TestModel").brand("TestBrand").imageObjectName("TestTitle.png").build();
+
+        when(repository.findById(1L)).thenReturn(Optional.of(car));
 
         final ResponseEntity<String> result = controller.deleteCar(1L);
 
@@ -182,17 +173,16 @@ class CarDealershipControllerTest {
     @Test
     void givenInvalidRequestToDeleteCar_whenDeletingCar_thenReturnErrorMessageString() {
         final String expected = CarDealershipController.CAR_NOT_FOUND_STRING.formatted(1L);
-
-        when(repository.existsById(1L)).thenReturn(false);
-
+        when(repository.findById(1L)).thenReturn(Optional.empty());
         assertThrows(CarNotFoundException.class, () -> controller.deleteCar(1L), expected);
     }
 
     @Test
-    void givenValidDeleteCarsByBrandRequest_whenDeletingCars_thenReturnCarList() {
+    void givenValidDeleteCarsByBrandRequest_whenDeletingCars_thenReturnCarList() throws MinioException, IOException,
+            NoSuchAlgorithmException, InvalidKeyException {
         final String expected = CarDealershipController.DELETE_CAR_BY_BRAND_SUCCESS_STRING.formatted(2, "VW");
-        final Car firstCar = Car.builder().brand("VW").build();
-        final Car secondCar = Car.builder().brand("VW").build();
+        final Car firstCar = Car.builder().brand("VW").imageObjectName("TestTitle1.png").build();
+        final Car secondCar = Car.builder().brand("VW").imageObjectName("TestTitle2.png").build();
         when(repository.deleteCarByBrand("VW")).thenReturn(List.of(firstCar, secondCar));
 
         final ResponseEntity<String> result = controller.deleteCarByBrand("VW");

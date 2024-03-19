@@ -25,8 +25,8 @@ public class ExceptionHandler extends ResponseEntityExceptionHandler {
         return handleExceptionInternal(e, e.getMessage(), new HttpHeaders(), HttpStatus.BAD_REQUEST, req);
     }
 
-    @org.springframework.web.bind.annotation.ExceptionHandler(InvalidFileUploadException.class)
-    public ResponseEntity<Object> handleMinioException(InvalidFileUploadException e, WebRequest req) {
+    @org.springframework.web.bind.annotation.ExceptionHandler(InvalidFileRequestException.class)
+    public ResponseEntity<Object> handleInvalidFileRequestException(InvalidFileRequestException e, WebRequest req) {
         log.error(e.getMessage());
         return handleExceptionInternal(e, e.getMessage(), new HttpHeaders(), HttpStatus.BAD_REQUEST, req);
     }

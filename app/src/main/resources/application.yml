@@ -14,7 +14,7 @@ server:
 
 spring:
   datasource:
-    url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/springintroduction}
+    url: ${POSTGRES_URL:jdbc:postgresql://localhost:5432/springintroduction}
     username: postgres
     password: password
     driver-class-name: org.postgresql.Driver
@@ -26,3 +26,8 @@ spring:
 configuration:
   cron:
     schedule: "0 0 * * * *"
+
+minio:
+  endpoint: ${MINIO_ENDPOINT:http://localhost:9000}
+  username: root
+  password: password

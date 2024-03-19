@@ -16,25 +16,33 @@ import java.util.Objects;
 @Entity
 @Builder
 public class Car extends Auditable {
+    // jpa won't change these values after instantiation, can be final
+    private final String brand;
+    private final String model;
     @Id
     @GeneratedValue
     private Long id;
-    // jpa won't change the value after instantiation, can be final
-    private final String brand;
-    private final String model;
     @CreatedDate
     private Instant date;
+    private String imageObjectName;
 
     public boolean equals(Car car) {
-        return hashCode() == car.hashCode();
-    }
-
-    public int hashCode() {
-        return Objects.hash(id, model, brand);
+        return Objects.equals(this.id, car.getId()) && Objects.equals(this.brand, car.getBrand())
+                && Objects.equals(this.model, car.getModel()) && Objects.equals(this.imageObjectName, car.getImageObjectName());
     }
 
     @Override
     public String toString() {
-        return "Car{" + "id=" + id + ", model='" + model + '\'' + ", brand='" + brand + '\'' + ", date=" + date + '}';
+        return "{" +
+                "\"id\":" + id +
+                ", \"brand\":\"" + brand + "\"" +
+                ", \"model\":\"" + model + "\"" +
+                ", \"date\":\"" + date + "\"" +
+                ", \"imageObjectName\":\"" + imageObjectName + "\"" +
+                "}";
+    }
+
+    public int hashCode() {
+        return Objects.hash(id, model, brand);
     }
 }

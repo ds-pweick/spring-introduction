@@ -31,7 +31,7 @@ class GetCarInMemoryTest extends SpringInMemoryTest {
 
         repository.saveAll(carList);
 
-        assertThat(controller.all().getBody()).hasSameSizeAs(carList)
+        assertThat(controller.allCars().getBody()).hasSameSizeAs(carList)
                 .allMatch(car -> carList.stream().anyMatch(car1 -> car1.equals(car)));
     }
 
@@ -39,8 +39,11 @@ class GetCarInMemoryTest extends SpringInMemoryTest {
     void givenCar_whenRequestingCar_thenGetCar() throws CarNotFoundException {
         final Car car = Car.builder().model("TestModel").brand("TestBrand").build();
         repository.save(car);
-        final String expected = car.toString();
-        assertThat(controller.get(car.getId()).getBody()).isEqualTo(expected);
+
+        Car fetchedCar = controller.get(car.getId()).getBody();
+
+        assertThat(fetchedCar).isNotNull();
+        assertThat(fetchedCar.equals(car)).isTrue();
     }
 
 }
