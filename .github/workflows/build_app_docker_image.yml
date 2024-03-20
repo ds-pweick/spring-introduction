@@ -26,7 +26,7 @@ jobs:
         cache: maven
         
     - name: Build with Maven
-      run: mvn -B clean package
+      run: mvn -B clean package -f pom.xml
       
     - name: Build Docker image
       run: docker build . -t spring-introduction
