@@ -21,15 +21,15 @@ jobs:
         ports:
           - 5432:5432
 
-      # spring-introduction-minio:
-      #   image: quay.io/minio/minio
-      #   ports:
-      #     - 9000:9000
-      #     - 9001:9001
-      #   env:
-      #     MINIO_ROOT_USER: root
-      #     MINIO_ROOT_PASSWORD: password
-      #   options: --name spring-introduction-minio quay.io/minio/minio server
+      spring-introduction-minio:
+        image: quay.io/minio/minio
+        ports:
+          - 9000:9000
+          - 9001:9001
+        env:
+          MINIO_ROOT_USER: root
+          MINIO_ROOT_PASSWORD: password
+        options: --name spring-introduction-minio quay.io/minio/minio server --address=127.0.0.1:9000
                     
     steps:
     - uses: actions/checkout@v4
@@ -41,8 +41,8 @@ jobs:
         distribution: 'temurin'
         cache: maven
         
-    - name: Set up MinIO
-      run: docker run -d -p 9000:9000 --name minio quay.io/minio/minio server
+    # - name: Set up MinIO
+    #   run: docker run -d -p 9000:9000 --name minio quay.io/minio/minio server
         
     - name: Test of app
       run: mvn -B clean test
