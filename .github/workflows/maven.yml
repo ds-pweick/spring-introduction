@@ -34,4 +34,4 @@ jobs:
           distribution: 'temurin'
           cache: maven
       - name: Build Docker image of app
-      - run: docker build . -t spring-introduction
+        run: docker build . -t spring-introduction
