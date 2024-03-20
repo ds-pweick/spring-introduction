@@ -6,9 +6,30 @@ on:
   pull_request:
     branches:
       - "*"
+      
 jobs:
   build_docker_image:
     runs-on: ubuntu-latest
+
+    services:
+      spring-introduction-postgres:
+        image: postgres
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: springintroduction
+        ports:
+          - 5432:5432
+
+      spring-introduction-minio:
+        image: quay.io/minio/minio
+        ports:
+          - 9000:9000
+          - 9001:9001
+        env:
+          MINIO_ROOT_USER: root
+          MINIO_ROOT_PASSWORD: password
+        options: server
 
     steps:
     - uses: actions/checkout@v4
@@ -22,3 +43,5 @@ jobs:
         
     - name: Test of app
       run: mvn -B clean test
+
+    
