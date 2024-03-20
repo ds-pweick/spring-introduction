@@ -7,11 +7,15 @@
 # documentation.
 
 name: Auto-build Docker image of app
-
-on: ["push", "workflow_dispatch"]
-
+on:
+  push:
+    branches:
+      - "main"
+  pull_request:
+    branches:
+      - "*"
 jobs:
-  setup_java_and_maven:
+  build_docker_image:
     runs-on: ubuntu-latest
 
     steps:
@@ -24,10 +28,5 @@ jobs:
         distribution: 'temurin'
         cache: maven
         
-  docker_build:
-    runs-on: ubuntu-latest
-    needs: setup_java_and_maven
-    
-    steps:
     - name: Build Docker image
       run: docker build . -t spring-introduction
