@@ -11,6 +11,8 @@ on:
   push:
     branches:
       - "main"
+    paths:
+      - "app/src/main/java/de/doubleslash/spring/introduction"
   pull_request:
     branches:
       - "*"
