@@ -29,10 +29,8 @@ jobs:
         env:
           MINIO_ROOT_USER: root
           MINIO_ROOT_PASSWORD: password
-        options: >-
-          server
-          
-
+        options: --name spring-introduction-minio server
+                    
     steps:
     - uses: actions/checkout@v4
     
@@ -43,7 +41,8 @@ jobs:
         distribution: 'temurin'
         cache: maven
         
+    # - name: Set up MinIO
+    #   run: docker run -d -p 9000:9000 --name minio minio/minio server /data
+        
     - name: Test of app
       run: mvn -B clean test
-
-    
