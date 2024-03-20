@@ -12,7 +12,7 @@ on:
     branches:
       - "main"
     paths:
-      - "app/src/main/java/de/doubleslash/spring/introduction"
+      - "*.java"
   pull_request:
     branches:
       - "*"
