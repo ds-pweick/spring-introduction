@@ -11,9 +11,9 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <!-- rename the artifactid to be able to have more then one project open -->
+    <!-- rename the artifactId to be able to have more than one project open -->
     <artifactId>app</artifactId>
-    <packaging>war</packaging>
+    <packaging>jar</packaging>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

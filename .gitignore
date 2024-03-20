@@ -31,3 +31,7 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### MinIO ###
+minio/*
+app/src/main/resources/*.{png,jpg,jpeg,webp}
