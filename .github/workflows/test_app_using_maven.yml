@@ -19,12 +19,12 @@ jobs:
       with:
         java-version: '17'
         distribution: 'temurin'
-        cache: ~/.m2
+        cache: ~/.m2/repository
 
     - name: Cache dependencies
       uses: actions/cache@v4
       with:
-        path: ~/.m2/  # Specify the path to your Maven dependencies
+        path: ~/.m2/repository  # Specify the path to your Maven dependencies
         key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
         restore-keys: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
         
