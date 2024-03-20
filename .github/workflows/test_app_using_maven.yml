@@ -29,7 +29,9 @@ jobs:
         env:
           MINIO_ROOT_USER: root
           MINIO_ROOT_PASSWORD: password
-        options: server
+        options: >-
+          server
+          
 
     steps:
     - uses: actions/checkout@v4
