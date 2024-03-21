@@ -1,7 +1,8 @@
 package de.doubleslash.spring.introduction.springcontexttests.setup;
 
-//import de.doubleslash.spring.introduction.repository.CarRepository;
-
+import de.doubleslash.spring.introduction.InMemoryDatasourceConfiguration;
+import de.doubleslash.spring.introduction.model.JsonStringToInstance;
+import de.doubleslash.spring.introduction.repository.CarImageRepository;
 import de.doubleslash.spring.introduction.repository.CarRepository;
 import lombok.Getter;
 import org.junit.jupiter.api.AfterEach;
@@ -11,17 +12,22 @@ import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.test.context.ActiveProfiles;
-
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.support.AnnotationConfigContextLoader;
 
 @Getter
 @ActiveProfiles("test")
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
 @ComponentScan("de.doubleslash.spring.introduction")
 @EnableAutoConfiguration
+@ContextConfiguration(classes = InMemoryDatasourceConfiguration.class, loader = AnnotationConfigContextLoader.class)
 public abstract class SpringInMemoryTest {
-
+    @Autowired
+    private JsonStringToInstance converter;
     @Autowired
     private CarRepository carRepository;
+    @Autowired
+    private CarImageRepository carImageRepository;
 
     @BeforeEach
     public void beforeEach() {
@@ -39,5 +45,4 @@ public abstract class SpringInMemoryTest {
         carRepository.deleteAllInBatch();
         System.out.println("Cleaned up db...");
     }
-
 }

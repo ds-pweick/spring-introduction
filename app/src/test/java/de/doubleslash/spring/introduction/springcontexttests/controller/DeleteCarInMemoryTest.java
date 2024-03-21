@@ -1,12 +1,11 @@
 package de.doubleslash.spring.introduction.springcontexttests.controller;
 
-import de.doubleslash.spring.introduction.controller.CarDealershipController;
 import de.doubleslash.spring.introduction.model.Car;
+import de.doubleslash.spring.introduction.model.JsonStringToInstance;
 import de.doubleslash.spring.introduction.repository.CarImageRepository;
 import de.doubleslash.spring.introduction.repository.CarRepository;
 import de.doubleslash.spring.introduction.springcontexttests.setup.SpringInMemoryTest;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 
@@ -17,15 +16,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 
 class DeleteCarInMemoryTest extends SpringInMemoryTest {
-
-    @Autowired
-    private CarRepository carRepository;
-
-    @Autowired
-    private CarImageRepository carImageRepository;
-
-    @Autowired
-    private CarDealershipController controller;
+    private final CarRepository carRepository = super.getCarRepository();
+    private final CarImageRepository carImageRepository = super.getCarImageRepository();
+    private final JsonStringToInstance converter = super.getConverter();
+//    private final CarDealershipController controller = new CarDealershipController(carRepository, carImageRepository,
+//            converter, fileHandler);
 
     @Test
     void givenCar_whenDeletingCar_thenDeleteCarAndAssociatedImages() throws Exception {
