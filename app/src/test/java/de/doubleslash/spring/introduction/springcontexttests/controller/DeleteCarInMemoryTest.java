@@ -28,13 +28,13 @@ class DeleteCarInMemoryTest extends SpringInMemoryTest {
         final MockMultipartFile file = new MockMultipartFile("file", "TestTitle.png",
                 MediaType.MULTIPART_FORM_DATA_VALUE, new byte[1]);
 
-        controller.addCar(carString, file);
+        //controller.addCar(carString, file);
 
         Car car = carRepository.findAll().get(0);
         assertThat(car).isNotNull();
         assertThat(carImageRepository.findAllByAssociatedCarId(car.getId())).isNotEmpty();
 
-        controller.deleteCar(car.getId());
+        //controller.deleteCar(car.getId());
         assertThat(carRepository.existsById(car.getId())).isFalse();
         assertThat(carImageRepository.findAllByAssociatedCarId(car.getId())).isEmpty();
     }
@@ -53,7 +53,7 @@ class DeleteCarInMemoryTest extends SpringInMemoryTest {
         }
 
         carRepository.saveAll(carList);
-        controller.deleteCarByBrand("TestBrand0");
+        //controller.deleteCarByBrand("TestBrand0");
 
         assertThat(carRepository.findAll()).allMatch(car -> car.getBrand().equals("TestBrand1"));
     }

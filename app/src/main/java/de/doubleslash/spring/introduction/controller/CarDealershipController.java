@@ -7,7 +7,6 @@ import de.doubleslash.spring.introduction.model.JsonStringToInstance;
 import de.doubleslash.spring.introduction.model.MinIoFileHandler;
 import de.doubleslash.spring.introduction.repository.CarImageRepository;
 import de.doubleslash.spring.introduction.repository.CarRepository;
-import io.minio.errors.*;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
@@ -21,10 +20,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
 import java.io.InputStream;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -141,16 +137,14 @@ public class CarDealershipController extends ControllerConfiguration {
         }
 
         try (InputStream inputStream = file.getInputStream()) {
-            String savedFilename = fileHandler.uploadFile(CARS_BUCKET, inputStream,
+            String savedFilename = fileHandler.uploadFile(inputStream, CARS_BUCKET,
                     file.getSize(), fileValidationResult.getSecond());
             // now that image object name is known, set property and save
             CarImage carImage = new CarImage(car, savedFilename, fileHandler, CARS_BUCKET);
 
             carRepository.save(car);
             carImageRepository.save(carImage);
-        } catch (IOException | ServerException | InsufficientDataException | ErrorResponseException |
-                 NoSuchAlgorithmException | InvalidKeyException | InvalidResponseException | XmlParserException |
-                 InternalException e) {
+        } catch (Exception e) {
             log.error("Requested multipart data upload failed due to exception: %s".formatted(e.getMessage()));
             return new ResponseEntity<>(FILE_UPLOAD_INTERNAL_ERROR_FAILURE_STRING, HttpStatus.INTERNAL_SERVER_ERROR);
         }
@@ -169,7 +163,7 @@ public class CarDealershipController extends ControllerConfiguration {
 
         List<String> associatedImageObjects = optionalCar.get().getCarImageList().stream()
                 .map(CarImage::getImageObjectName).toList();
-        fileHandler.deleteMultiple(CARS_BUCKET, associatedImageObjects);
+        fileHandler.deleteMultiple(associatedImageObjects, CARS_BUCKET);
 
         return new ResponseEntity<>(DELETE_CAR_SUCCESS_STRING, HttpStatus.OK);
     }
@@ -187,7 +181,7 @@ public class CarDealershipController extends ControllerConfiguration {
                             .map(CarImage::getImageObjectName).toList())
                     .toList();
             for (List<String> imageObjectList : imageObjectListList) {
-                fileHandler.deleteMultiple(CARS_BUCKET, imageObjectList);
+                fileHandler.deleteMultiple(imageObjectList, CARS_BUCKET);
             }
             responseText = DELETE_CAR_BY_BRAND_SUCCESS_STRING.formatted(deleted.size(), brand);
         } else {

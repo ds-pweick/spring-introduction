@@ -2,7 +2,7 @@ package de.doubleslash.spring.introduction.model;
 
 import de.doubleslash.spring.introduction.config.MinIoConfiguration;
 import io.minio.*;
-import io.minio.errors.*;
+import io.minio.errors.MinioException;
 import lombok.extern.slf4j.Slf4j;
 import org.bouncycastle.util.encoders.Hex;
 import org.jetbrains.annotations.NotNull;
@@ -21,7 +21,7 @@ import java.util.List;
 
 @Service
 @Slf4j
-public class MinIoFileHandler {
+public class MinIoFileHandler implements BlobStoreFileHandler {
 
     private final MinioClient minioClient;
 
@@ -35,8 +35,8 @@ public class MinIoFileHandler {
                 configuration.getPassword()).build();
     }
 
-    private static String buildFilename(String fileExtension) throws NoSuchAlgorithmException {
-        MessageDigest digest = MessageDigest.getInstance("SHA-256");
+    @Override
+    public String buildFilename(String fileExtension, MessageDigest digest) {
         int random = new SecureRandom().nextInt(0, Integer.MAX_VALUE);
         String currentDateTime = LocalDateTime.now().toString();
 
@@ -46,16 +46,15 @@ public class MinIoFileHandler {
         return Hex.toHexString(hash) + "." + fileExtension;
     }
 
-    public String uploadFile(String bucketName, InputStream fileStream, Long fileSize, String fileExtension)
-            throws IOException, NoSuchAlgorithmException, InvalidKeyException, ServerException,
-            InsufficientDataException, ErrorResponseException, InvalidResponseException, XmlParserException,
-            InternalException {
+    @Override
+    public String uploadFile(InputStream fileStream, String bucketName, Long fileSize, String fileExtension)
+            throws Exception {
 
         if (!minioClient.bucketExists(BucketExistsArgs.builder().bucket(bucketName).build())) {
             minioClient.makeBucket(MakeBucketArgs.builder().bucket(bucketName).build());
         }
 
-        String filename = buildFilename(fileExtension);
+        String filename = buildFilename(fileExtension, MessageDigest.getInstance("SHA256"));
 
         minioClient.putObject(
                 PutObjectArgs.builder()
@@ -67,8 +66,9 @@ public class MinIoFileHandler {
         return filename;
     }
 
+    @Override
     public ByteArrayResource downloadFile(String bucketName, String filename)
-            throws IOException, NoSuchAlgorithmException, InvalidKeyException, MinioException {
+            throws Exception {
 
         if (!minioClient.bucketExists(BucketExistsArgs.builder().bucket(bucketName).build())) {
             throw new MinioException("Something went wrong.");
@@ -94,8 +94,8 @@ public class MinIoFileHandler {
         minioClient.removeObject(RemoveObjectArgs.builder().bucket(bucketName).object(filename).build());
     }
 
-    public void deleteMultiple(String bucketName, List<String> filenameList) throws MinioException,
-            IOException, NoSuchAlgorithmException, InvalidKeyException {
+    @Override
+    public void deleteMultiple(List<String> filenameList, String bucketName) throws Exception {
         if (!minioClient.bucketExists(BucketExistsArgs.builder().bucket(bucketName).build())) {
             throw new MinioException("Something went wrong.");
         }
