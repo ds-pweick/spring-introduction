@@ -9,7 +9,7 @@ import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
 @ConfigurationPropertiesScan
 @Getter
 @Setter
-public class MinIoConfiguration {
+public class MinioConfiguration {
     private String endpoint;
     private String username;
     private String password;

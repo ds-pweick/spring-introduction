@@ -1,6 +1,7 @@
 package de.doubleslash.spring.introduction.controller;
 
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import io.minio.errors.MinioException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
@@ -14,13 +15,21 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 @RestControllerAdvice
 public class ExceptionHandler extends ResponseEntityExceptionHandler {
     @org.springframework.web.bind.annotation.ExceptionHandler(CarNotFoundException.class)
-    public ResponseEntity<Object> handleCarModelOrBrandStringTooLongException(CarNotFoundException e, WebRequest req) {
+    public ResponseEntity<Object> handleCarNotFoundException(CarNotFoundException e, WebRequest req) {
         log.error(e.getMessage());
         return handleExceptionInternal(e, e.getMessage(), new HttpHeaders(), HttpStatus.NOT_FOUND, req);
     }
 
-    @org.springframework.web.bind.annotation.ExceptionHandler(CarModelOrBrandStringInvalidException.class)
-    public ResponseEntity<Object> handleCarModelOrBrandStringTooLongException(CarModelOrBrandStringInvalidException e, WebRequest req) {
+    @org.springframework.web.bind.annotation.ExceptionHandler(JsonProcessingException.class)
+    public ResponseEntity<Object> handleJsonProcessingException(JsonProcessingException e, WebRequest req) {
+        log.error(e.getMessage());
+        return handleExceptionInternal(e, CarDealershipService.CAR_JSON_PARSE_FAILURE_STRING, new HttpHeaders(),
+                HttpStatus.BAD_REQUEST, req);
+    }
+
+    @org.springframework.web.bind.annotation.ExceptionHandler(CarModelAndOrBrandStringInvalidException.class)
+    public ResponseEntity<Object> handleCarModelAndOrBrandStringInvalidException(
+            CarModelAndOrBrandStringInvalidException e, WebRequest req) {
         log.error(e.getMessage());
         return handleExceptionInternal(e, e.getMessage(), new HttpHeaders(), HttpStatus.BAD_REQUEST, req);
     }
@@ -32,7 +41,7 @@ public class ExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
     @org.springframework.web.bind.annotation.ExceptionHandler(MinioException.class)
-    public ResponseEntity<Object> handleMinioException(CarModelOrBrandStringInvalidException e, WebRequest req) {
+    public ResponseEntity<Object> handleMinioException(CarModelAndOrBrandStringInvalidException e, WebRequest req) {
         log.error(e.getMessage());
         return handleExceptionInternal(e, e.getMessage(), new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR, req);
     }
