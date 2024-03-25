@@ -3,7 +3,6 @@ package de.doubleslash.spring.introduction.model;
 import de.doubleslash.spring.introduction.config.MinioConfiguration;
 import io.minio.*;
 import io.minio.errors.MinioException;
-import lombok.extern.slf4j.Slf4j;
 import org.bouncycastle.util.encoders.Hex;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
@@ -16,9 +15,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
-@Slf4j
 public class MinioFileHandler implements BlobStoreFileHandler {
-
     private final MinioClient minioClient;
 
     public MinioFileHandler(MinioConfiguration configuration) {
@@ -29,6 +26,18 @@ public class MinioFileHandler implements BlobStoreFileHandler {
     private static MinioClient getMinioClient(MinioConfiguration configuration) {
         return MinioClient.builder().endpoint(configuration.getEndpoint()).credentials(configuration.getUsername(),
                 configuration.getPassword()).build();
+    }
+
+    private void makeBucketIfNotExists(String minioBucket) throws Exception {
+        if (!minioClient.bucketExists(BucketExistsArgs.builder().bucket(minioBucket).build())) {
+            minioClient.makeBucket(MakeBucketArgs.builder().bucket(minioBucket).build());
+        }
+    }
+
+    private void continueIfBucketExistsOrThrow(String minioBucket) throws Exception {
+        if (!minioClient.bucketExists(BucketExistsArgs.builder().bucket(minioBucket).build())) {
+            throw new MinioException("Something went wrong.");
+        }
     }
 
     @Override
@@ -43,12 +52,10 @@ public class MinioFileHandler implements BlobStoreFileHandler {
     }
 
     @Override
-    public String uploadFile(InputStream fileStream, String bucketName, Long fileSize, String fileExtension)
+    public String uploadFile(InputStream fileStream, Long fileSize, String fileExtension, String bucketName)
             throws Exception {
 
-        if (!minioClient.bucketExists(BucketExistsArgs.builder().bucket(bucketName).build())) {
-            minioClient.makeBucket(MakeBucketArgs.builder().bucket(bucketName).build());
-        }
+        makeBucketIfNotExists(bucketName);
 
         String filename = buildFilename(fileExtension, MessageDigest.getInstance("SHA256"));
 
@@ -63,15 +70,12 @@ public class MinioFileHandler implements BlobStoreFileHandler {
     }
 
     @Override
-    public byte[] downloadFile(String bucketName, String filename)
+    public byte[] downloadFile(String filename, String bucketName)
             throws Exception {
-
-        if (!minioClient.bucketExists(BucketExistsArgs.builder().bucket(bucketName).build())) {
-            throw new MinioException("Something went wrong.");
-        }
+        continueIfBucketExistsOrThrow(bucketName);
 
         InputStream fileStream = minioClient.getObject(
-                GetObjectArgs.builder().bucket(bucketName).object(filename).build()
+                GetObjectArgs.builder().bucket(filename).object(filename).build()
         );
         byte[] fileData = fileStream.readAllBytes();
         fileStream.close();
@@ -79,22 +83,9 @@ public class MinioFileHandler implements BlobStoreFileHandler {
         return fileData;
     }
 
-    /*public void deleteFile(String bucketName, String filename) throws MinioException,
-            IOException, NoSuchAlgorithmException, InvalidKeyException {
-        if (!minioClient.bucketExists(BucketExistsArgs.builder().bucket(bucketName).build())) {
-            throw new MinioException("Something went wrong.");
-        }
-
-        log.info("Removing file %s".formatted(filename));
-
-        minioClient.removeObject(RemoveObjectArgs.builder().bucket(bucketName).object(filename).build());
-    }*/
-
     @Override
     public void deleteMultiple(List<String> filenameList, String bucketName) throws Exception {
-        if (!minioClient.bucketExists(BucketExistsArgs.builder().bucket(bucketName).build())) {
-            throw new MinioException("Something went wrong.");
-        }
+        continueIfBucketExistsOrThrow(bucketName);
 
         for (String filename : filenameList) {
             minioClient.removeObject(RemoveObjectArgs.builder().bucket(bucketName).object(filename).build());

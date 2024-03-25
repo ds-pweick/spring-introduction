@@ -34,4 +34,7 @@ build/
 
 ### MinIO ###
 minio/*
-app/src/main/resources/*.{png,jpg,jpeg,webp}
+**.png
+**.jpg
+**.jpeg
+**.webp

@@ -157,8 +157,8 @@ public class CarDealershipService {
         }
 
         try (InputStream inputStream = imageOfNewCar.getInputStream()) {
-            String savedFilename = minioFileHandler.uploadFile(inputStream, CARS_BUCKET,
-                    imageOfNewCar.getSize(), fileValidationResult.getSecond());
+            String savedFilename = minioFileHandler.uploadFile(inputStream,
+                    imageOfNewCar.getSize(), fileValidationResult.getSecond(), CARS_BUCKET);
             // now that image object name is known, save new entity
             CarImage carImage = new CarImage(car, savedFilename);
 

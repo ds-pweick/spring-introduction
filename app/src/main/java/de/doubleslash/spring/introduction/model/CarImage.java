@@ -2,7 +2,10 @@ package de.doubleslash.spring.introduction.model;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIncludeProperties;
-import jakarta.persistence.*;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.Id;
+import jakarta.persistence.ManyToOne;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -25,26 +28,9 @@ public class CarImage {
     @GeneratedValue
     private Long id;
     private String imageObjectName;
-    @Transient
-    private MinIoFileHandler fileHandler;
-    @Transient
-    private String minIoBucketName;
 
-    public CarImage(Car associatedCar, String imageObjectName, MinIoFileHandler fileHandler, String minIoBucketName) {
+    public CarImage(Car associatedCar, String imageObjectName) {
         this.associatedCar = associatedCar;
         this.imageObjectName = imageObjectName;
-        this.fileHandler = fileHandler;
-        this.minIoBucketName = minIoBucketName;
     }
-
-    /*@PostRemove
-    public void deleteImageObject() {
-        log.info("CALLED");
-        try {
-            fileHandler.deleteFile(minIoBucketName, imageObjectName);
-            log.error("Deleted file %s".formatted(imageObjectName));
-        } catch (MinioException | IOException | NoSuchAlgorithmException | InvalidKeyException e) {
-            log.error("File %s".formatted(imageObjectName), "could not be deleted due to exception", e);
-        }
-    }*/
 }
