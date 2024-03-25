@@ -25,7 +25,6 @@ import java.util.Optional;
 @Slf4j
 @AllArgsConstructor
 public class CarDealershipService {
-
     public final static String ADD_CAR_AND_IMAGE_SUCCESS_STRING = "Successfully added car along with its image.";
     public final static String CAR_JSON_PARSE_FAILURE_STRING = "Car data sent is no valid JSON.";
     public final static String CAR_MODEL_AND_OR_BRAND_NAME_INVALID_STRING = "Car model and/or brand name invalid.";
@@ -35,11 +34,11 @@ public class CarDealershipService {
     public final static String CARS_BUCKET = "car-images";
     public final static String CARS_ROOT = "/cars";
     public final static String IMAGES_ROOT = "/images";
-    public static String CAR_NOT_FOUND_STRING = "No car with requested id found.";
-    public static String REPLACE_CAR_SUCCESS_STRING = "Replacement successful.";
-    public static String DELETE_CAR_SUCCESS_STRING = "Deletion successful.";
-    public static String DELETE_CAR_BY_BRAND_SUCCESS_STRING = "Successfully deleted %d car(s) of brand %s.";
-    public static String DELETE_CAR_BY_BRAND_NONE_DELETED_NEUTRAL_STRING = "No cars were deleted.";
+    public final static String CAR_NOT_FOUND_STRING = "No car with requested id found.";
+    public final static String REPLACE_CAR_SUCCESS_STRING = "Replacement successful.";
+    public final static String DELETE_CAR_SUCCESS_STRING = "Deletion successful.";
+    public final static String DELETE_CAR_BY_BRAND_SUCCESS_STRING = "Successfully deleted %d car(s) of brand %s.";
+    public final static String DELETE_CAR_BY_BRAND_NONE_DELETED_NEUTRAL_STRING = "No cars were deleted.";
 
     private CarRepository carRepository;
     private CarImageRepository carImageRepository;
@@ -53,6 +52,14 @@ public class CarDealershipService {
             case jpg, jpeg -> MediaType.IMAGE_JPEG;
             case webp -> MediaType.valueOf("image/webp");
         };
+    }
+
+    public List<Car> getAllCars() {
+        return carRepository.findAll();
+    }
+
+    public List<CarImage> getAllCarImages() {
+        return carImageRepository.findAll();
     }
 
     public Boolean carExists(Long id) {

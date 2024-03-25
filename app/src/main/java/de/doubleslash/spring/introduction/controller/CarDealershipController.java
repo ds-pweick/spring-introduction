@@ -3,8 +3,6 @@ package de.doubleslash.spring.introduction.controller;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import de.doubleslash.spring.introduction.model.Car;
 import de.doubleslash.spring.introduction.model.CarImage;
-import de.doubleslash.spring.introduction.repository.CarImageRepository;
-import de.doubleslash.spring.introduction.repository.CarRepository;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
@@ -26,20 +24,16 @@ import static de.doubleslash.spring.introduction.controller.CarDealershipService
 @Slf4j
 public class CarDealershipController {
 
-    private final CarRepository carRepository;
-
-    private final CarImageRepository carImageRepository;
-
     private final CarDealershipService carDealershipService;
 
     @GetMapping(CARS_ROOT)
     public ResponseEntity<List<Car>> allCars() {
-        return new ResponseEntity<>(carRepository.findAll(), HttpStatus.OK);
+        return new ResponseEntity<>(carDealershipService.getAllCars(), HttpStatus.OK);
     }
 
     @GetMapping(IMAGES_ROOT)
     public ResponseEntity<List<CarImage>> allCarImages() {
-        return new ResponseEntity<>(carImageRepository.findAll(), HttpStatus.OK);
+        return new ResponseEntity<>(carDealershipService.getAllCarImages(), HttpStatus.OK);
     }
 
     @GetMapping(CARS_ROOT + "/{id}")
