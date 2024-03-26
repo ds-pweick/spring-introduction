@@ -1,10 +1,10 @@
 package de.doubleslash.spring.introduction.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import de.doubleslash.spring.introduction.model.BlobStoreFileHandler;
 import de.doubleslash.spring.introduction.model.Car;
 import de.doubleslash.spring.introduction.model.CarImage;
 import de.doubleslash.spring.introduction.model.JsonStringToInstanceConverter;
-import de.doubleslash.spring.introduction.model.MinioFileHandler;
 import de.doubleslash.spring.introduction.repository.CarImageRepository;
 import de.doubleslash.spring.introduction.repository.CarRepository;
 import lombok.AllArgsConstructor;
@@ -42,7 +42,7 @@ public class CarDealershipService {
 
     private CarRepository carRepository;
     private CarImageRepository carImageRepository;
-    private MinioFileHandler minioFileHandler;
+    private BlobStoreFileHandler fileHandler;
     private JsonStringToInstanceConverter converter;
 
     @NotNull
@@ -83,7 +83,7 @@ public class CarDealershipService {
 
         MediaType mediaType = getMediaType(fileValidationResult.getSecond());
 
-        return Pair.of(minioFileHandler.downloadFile(CARS_BUCKET, imageObjectName), mediaType);
+        return Pair.of(fileHandler.downloadFile(CARS_BUCKET, imageObjectName), mediaType);
     }
 
     public Car carFromJsonIfValid(String carString) throws CarModelAndOrBrandStringInvalidException, JsonProcessingException {
@@ -119,7 +119,7 @@ public class CarDealershipService {
                 .map(CarImage::getImageObjectName).toList();
 
         carRepository.deleteById(id);
-        minioFileHandler.deleteMultiple(associatedImageObjects, CARS_BUCKET);
+        fileHandler.deleteMultiple(associatedImageObjects, CARS_BUCKET);
     }
 
     public String deleteCarByBrand(String brand) throws Exception {
@@ -140,7 +140,7 @@ public class CarDealershipService {
                         .map(CarImage::getImageObjectName).toList())
                 .toList();
         for (List<String> imageObjectList : imageObjectListList) {
-            minioFileHandler.deleteMultiple(imageObjectList, CARS_BUCKET);
+            fileHandler.deleteMultiple(imageObjectList, CARS_BUCKET);
         }
     }
 
@@ -157,7 +157,7 @@ public class CarDealershipService {
         }
 
         try (InputStream inputStream = imageOfNewCar.getInputStream()) {
-            String savedFilename = minioFileHandler.uploadFile(inputStream,
+            String savedFilename = fileHandler.uploadFile(inputStream,
                     imageOfNewCar.getSize(), fileValidationResult.getSecond(), CARS_BUCKET);
             // now that image object name is known, save new entity
             CarImage carImage = new CarImage(car, savedFilename);

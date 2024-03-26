@@ -1,4 +1,4 @@
-package de.doubleslash.spring.introduction.jsontostringinstanceconverter;
+package de.doubleslash.spring.introduction.jsonconverter;
 
 
 import com.fasterxml.jackson.core.JsonProcessingException;

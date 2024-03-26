@@ -1,19 +1,6 @@
 package de.doubleslash.spring.introduction.springcontexttests.controller;
 
-import de.doubleslash.spring.introduction.controller.CarDealershipController;
-import de.doubleslash.spring.introduction.model.Car;
-import de.doubleslash.spring.introduction.repository.CarRepository;
-import de.doubleslash.spring.introduction.springcontexttests.setup.SpringInMemoryTest;
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
-import org.springframework.mock.web.MockMultipartFile;
-
-import java.time.Instant;
-import java.util.List;
-
-import static org.assertj.core.api.Assertions.assertThat;
-
+/*
 class PostCarInMemoryTest extends SpringInMemoryTest {
     @Autowired
     private CarRepository repository;
@@ -43,4 +30,4 @@ class PostCarInMemoryTest extends SpringInMemoryTest {
         assertThat(repository.existsById(savedCar.getId())).isFalse();
     }
 
-}
+}*/

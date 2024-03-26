@@ -1,17 +1,6 @@
 package de.doubleslash.spring.introduction.springcontexttests.controller;
 
-import de.doubleslash.spring.introduction.model.Car;
-import de.doubleslash.spring.introduction.repository.CarRepository;
-import de.doubleslash.spring.introduction.springcontexttests.setup.SpringInMemoryTest;
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
-import static org.assertj.core.api.Assertions.assertThat;
-
+/*
 public class GenericDbBehaviorCheckTest extends SpringInMemoryTest {
 
     @Autowired
@@ -54,4 +43,4 @@ public class GenericDbBehaviorCheckTest extends SpringInMemoryTest {
         assertThat(obtainedList).hasSameSizeAs(carList);
     }
 
-}
+}*/

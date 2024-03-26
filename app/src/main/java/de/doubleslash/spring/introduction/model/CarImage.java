@@ -10,7 +10,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 
 
 @AllArgsConstructor
@@ -18,7 +17,6 @@ import lombok.extern.slf4j.Slf4j;
 @Data
 @Entity
 @Builder
-@Slf4j
 @JsonIncludeProperties(value = "imageObjectName")
 public class CarImage {
     @ManyToOne

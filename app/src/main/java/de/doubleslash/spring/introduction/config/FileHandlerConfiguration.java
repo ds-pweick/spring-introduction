@@ -5,11 +5,11 @@ import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
 
-@ConfigurationProperties(prefix = "minio")
+@ConfigurationProperties(prefix = "handler")
 @ConfigurationPropertiesScan
 @Getter
 @Setter
-public class MinioConfiguration {
+public class FileHandlerConfiguration {
     private String endpoint;
     private String username;
     private String password;

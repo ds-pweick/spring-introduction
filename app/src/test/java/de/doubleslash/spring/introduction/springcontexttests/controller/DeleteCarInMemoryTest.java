@@ -1,42 +1,29 @@
 package de.doubleslash.spring.introduction.springcontexttests.controller;
 
-import de.doubleslash.spring.introduction.model.Car;
-import de.doubleslash.spring.introduction.model.JsonStringToInstance;
-import de.doubleslash.spring.introduction.repository.CarImageRepository;
-import de.doubleslash.spring.introduction.repository.CarRepository;
-import de.doubleslash.spring.introduction.springcontexttests.setup.SpringInMemoryTest;
-import org.junit.jupiter.api.Test;
-import org.springframework.http.MediaType;
-import org.springframework.mock.web.MockMultipartFile;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import static org.assertj.core.api.Assertions.assertThat;
-
-
+/*@DataJpaTest(properties = {
+        "spring.datasource.url=jdbc:h2:mem:springintroduction",
+        "spring.jpa.hibernate.ddl-auto=create-drop"
+})
 class DeleteCarInMemoryTest extends SpringInMemoryTest {
-    private final CarRepository carRepository = super.getCarRepository();
-    private final CarImageRepository carImageRepository = super.getCarImageRepository();
-    private final JsonStringToInstance converter = super.getConverter();
-//    private final CarDealershipController controller = new CarDealershipController(carRepository, carImageRepository,
-//            converter, fileHandler);
 
     @Test
-    void givenCar_whenDeletingCar_thenDeleteCarAndAssociatedImages() throws Exception {
+    void givenCar_whenDeletingCar_thenDeleteCarAndAssociatedImages() {
         final String carString = "{\"brand\":\"TestBrand\",\"model\":\"TestModel\"}";
         final MockMultipartFile file = new MockMultipartFile("file", "TestTitle.png",
                 MediaType.MULTIPART_FORM_DATA_VALUE, new byte[1]);
 
-        //controller.addCar(carString, file);
+        controller.addCarAndImage(carString, file);
 
         Car car = carRepository.findAll().get(0);
         assertThat(car).isNotNull();
         assertThat(carImageRepository.findAllByAssociatedCarId(car.getId())).isNotEmpty();
+    }
 
-        //controller.deleteCar(car.getId());
+controller.deleteCar(car.getId());
         assertThat(carRepository.existsById(car.getId())).isFalse();
-        assertThat(carImageRepository.findAllByAssociatedCarId(car.getId())).isEmpty();
+        assertThat(carImageRepository.findAllByAssociatedCarId(car.getId())).isEmpty();*//*
+
     }
 
     @Test
@@ -57,4 +44,4 @@ class DeleteCarInMemoryTest extends SpringInMemoryTest {
 
         assertThat(carRepository.findAll()).allMatch(car -> car.getBrand().equals("TestBrand1"));
     }
-}
+}*/

@@ -1,16 +1,8 @@
 server:
   ssl:
-    key-store-type: "PKCS12"
-    key-alias: "springboot"
-    key-store-password: "password"
-    key-store: "classpath:keystore/springboot.p12"
-  port: 9091
+    enabled: false
   http:
     port: 9090
-  servlet:
-    encoding:
-      charset: "UTF-8"
-      force: false
 
 spring:
   datasource:
@@ -21,13 +13,12 @@ spring:
   jpa:
     hibernate:
       ddl-auto: update
-    database-platform: org.hibernate.dialect.PostgreSQLDialect
 
 configuration:
   cron:
     schedule: "0 0 * * * *"
 
-minio:
+handler:
   endpoint: ${MINIO_ENDPOINT:http://localhost:9000}
   username: root
   password: password

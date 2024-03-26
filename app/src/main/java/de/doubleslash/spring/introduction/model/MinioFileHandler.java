@@ -1,10 +1,11 @@
 package de.doubleslash.spring.introduction.model;
 
-import de.doubleslash.spring.introduction.config.MinioConfiguration;
+import de.doubleslash.spring.introduction.config.FileHandlerConfiguration;
 import io.minio.*;
 import io.minio.errors.MinioException;
 import org.bouncycastle.util.encoders.Hex;
 import org.jetbrains.annotations.NotNull;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
 import java.io.InputStream;
@@ -14,16 +15,18 @@ import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.util.List;
 
+
+@Profile("!test")
 @Service
 public class MinioFileHandler implements BlobStoreFileHandler {
     private final MinioClient minioClient;
 
-    public MinioFileHandler(MinioConfiguration configuration) {
+    public MinioFileHandler(FileHandlerConfiguration configuration) {
         this.minioClient = getMinioClient(configuration);
     }
 
     @NotNull
-    private static MinioClient getMinioClient(MinioConfiguration configuration) {
+    private static MinioClient getMinioClient(FileHandlerConfiguration configuration) {
         return MinioClient.builder().endpoint(configuration.getEndpoint()).credentials(configuration.getUsername(),
                 configuration.getPassword()).build();
     }
