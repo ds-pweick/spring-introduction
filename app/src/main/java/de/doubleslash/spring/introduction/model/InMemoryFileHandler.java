@@ -1,40 +1,27 @@
 package de.doubleslash.spring.introduction.model;
 
-import org.bouncycastle.util.encoders.Hex;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nullable;
 import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
-import java.security.SecureRandom;
-import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 @Component
 @Profile("test")
+@Slf4j
 public class InMemoryFileHandler implements BlobStoreFileHandler {
 
     private final Map<String, byte[]> blobStore = new HashMap<>();
 
     @Override
-    public String buildFilename(String fileExtension, MessageDigest digest) {
-        int random = new SecureRandom().nextInt(0, Integer.MAX_VALUE);
-        String currentDateTime = LocalDateTime.now().toString();
-
-        String message = "%d".formatted(random) + currentDateTime;
-        byte[] hash = digest.digest(message.getBytes(StandardCharsets.UTF_8));
-
-        return Hex.toHexString(hash) + "." + fileExtension;
-    }
-
-    @Override
     public String uploadFile(InputStream fileStream, @Nullable Long fileSize,
                              String fileExtension, String bucketName) throws Exception {
-        String filename = buildFilename(fileExtension, MessageDigest.getInstance("SHA256"));
+        String filename = buildUniqueFilename(fileExtension, MessageDigest.getInstance("SHA256"));
         blobStore.put(filename, fileStream.readAllBytes());
         fileStream.close();
 

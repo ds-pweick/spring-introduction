@@ -3,16 +3,12 @@ package de.doubleslash.spring.introduction.model;
 import de.doubleslash.spring.introduction.config.FileHandlerConfiguration;
 import io.minio.*;
 import io.minio.errors.MinioException;
-import org.bouncycastle.util.encoders.Hex;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
 import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
-import java.security.SecureRandom;
-import java.time.LocalDateTime;
 import java.util.List;
 
 
@@ -44,23 +40,12 @@ public class MinioFileHandler implements BlobStoreFileHandler {
     }
 
     @Override
-    public String buildFilename(String fileExtension, MessageDigest digest) {
-        int random = new SecureRandom().nextInt(0, Integer.MAX_VALUE);
-        String currentDateTime = LocalDateTime.now().toString();
-
-        String message = "%d".formatted(random) + currentDateTime;
-        byte[] hash = digest.digest(message.getBytes(StandardCharsets.UTF_8));
-
-        return Hex.toHexString(hash) + "." + fileExtension;
-    }
-
-    @Override
     public String uploadFile(InputStream fileStream, Long fileSize, String fileExtension, String bucketName)
             throws Exception {
 
         makeBucketIfNotExists(bucketName);
 
-        String filename = buildFilename(fileExtension, MessageDigest.getInstance("SHA256"));
+        String filename = buildUniqueFilename(fileExtension, MessageDigest.getInstance("SHA256"));
 
         minioClient.putObject(
                 PutObjectArgs.builder()
