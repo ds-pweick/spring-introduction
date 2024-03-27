@@ -83,7 +83,7 @@ public class CarDealershipService {
 
         MediaType mediaType = getMediaType(fileValidationResult.getSecond());
 
-        return Pair.of(fileHandler.downloadFile(CARS_BUCKET, imageObjectName), mediaType);
+        return Pair.of(fileHandler.downloadFile(imageObjectName, CARS_BUCKET), mediaType);
     }
 
     public Car carFromJsonIfValid(String carString) throws CarModelAndOrBrandStringInvalidException, JsonProcessingException {
@@ -95,13 +95,13 @@ public class CarDealershipService {
         return car;
     }
 
-    public Boolean addCarAndImageIfValid(String newCarJson, MultipartFile imageOfNewCar)
+    public Pair<Boolean, Car> addCarAndImageIfValid(String newCarJson, MultipartFile imageOfNewCar)
             throws CarModelAndOrBrandStringInvalidException, JsonProcessingException, InvalidFileRequestException {
         Car car = carFromJsonIfValid(newCarJson);
-        return uploadCarAndImageIfValidated(car, imageOfNewCar);
+        return addCarAndUploadImageIfValidated(car, imageOfNewCar);
     }
 
-    public Boolean replaceCarIfValid(Long oldCarId, String newCarJson, MultipartFile imageOfNewCar)
+    public Pair<Boolean, Car> replaceCarIfValid(Long oldCarId, String newCarJson, MultipartFile imageOfNewCar)
             throws CarNotFoundException, CarModelAndOrBrandStringInvalidException, InvalidFileRequestException, JsonProcessingException {
         if (!carExists(oldCarId)) {
             throw new CarNotFoundException(CAR_NOT_FOUND_STRING);
@@ -110,7 +110,7 @@ public class CarDealershipService {
         Car newCar = carFromJsonIfValid(newCarJson);
 
         carRepository.deleteById(oldCarId);
-        return uploadCarAndImageIfValidated(newCar, imageOfNewCar);
+        return addCarAndUploadImageIfValidated(newCar, imageOfNewCar);
     }
 
     public void deleteCarAndImageIfValid(Long id) throws Exception {
@@ -144,7 +144,7 @@ public class CarDealershipService {
         }
     }
 
-    private Boolean uploadCarAndImageIfValidated(Car car, MultipartFile imageOfNewCar)
+    private Pair<Boolean, Car> addCarAndUploadImageIfValidated(Car car, MultipartFile imageOfNewCar)
             throws InvalidFileRequestException {
 
         boolean carAndImageUploaded = false;
@@ -169,7 +169,7 @@ public class CarDealershipService {
             log.error("Requested multipart data upload failed due to exception: %s".formatted(e.getMessage()));
         }
 
-        return carAndImageUploaded;
+        return Pair.of(carAndImageUploaded, car);
     }
 
     /**

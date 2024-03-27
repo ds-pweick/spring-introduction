@@ -31,4 +31,9 @@ public class CarImage {
         this.associatedCar = associatedCar;
         this.imageObjectName = imageObjectName;
     }
+
+    @Override
+    public String toString() {
+        return imageObjectName;
+    }
 }

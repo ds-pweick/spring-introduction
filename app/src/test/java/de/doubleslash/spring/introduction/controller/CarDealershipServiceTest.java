@@ -127,7 +127,7 @@ public class CarDealershipServiceTest {
 
         when(converter.convert(newCarJson, Car.class)).thenReturn(car);
 
-        assertThat(service.addCarAndImageIfValid(newCarJson, file)).isTrue();
+        assertThat(service.addCarAndImageIfValid(newCarJson, file).getFirst()).isTrue();
     }
 
     @Test
@@ -144,7 +144,7 @@ public class CarDealershipServiceTest {
         when(carRepository.findById(1L)).thenReturn(Optional.of(car));
         when(converter.convert(newCarJson, Car.class)).thenReturn(newCar);
 
-        assertThat(service.replaceCarIfValid(1L, newCarJson, imageOfNewCar)).isTrue();
+        assertThat(service.replaceCarIfValid(1L, newCarJson, imageOfNewCar).getFirst()).isTrue();
     }
 
     @Test

@@ -54,30 +54,31 @@ public class CarDealershipController {
     }
 
     @PostMapping(value = CARS_ROOT + "/add", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<String> addCarAndImage(@Valid @NotNull @RequestParam("newCarJson") String newCarJson,
-                                                 @Valid @NotNull @RequestParam("imageOfNewCar") MultipartFile imageOfNewCar)
+    public ResponseEntity<String> addCarAndImage(@Valid @NotNull @RequestParam("car") String newCarJson,
+                                                 @Valid @NotNull @RequestParam("file") MultipartFile imageOfNewCar)
             throws InvalidFileRequestException, CarModelAndOrBrandStringInvalidException, JsonProcessingException {
 
-        boolean carAndImageUploaded = carDealershipService.addCarAndImageIfValid(newCarJson, imageOfNewCar);
+        Pair<Boolean, Car> carDataIfAdded = carDealershipService.addCarAndImageIfValid(newCarJson, imageOfNewCar);
 
-        if (!carAndImageUploaded) {
+        if (!carDataIfAdded.getFirst()) {
             return new ResponseEntity<>(FILE_UPLOAD_INTERNAL_ERROR_FAILURE_STRING, HttpStatus.INTERNAL_SERVER_ERROR);
         } else {
-            return new ResponseEntity<>(ADD_CAR_AND_IMAGE_SUCCESS_STRING, HttpStatus.OK);
+            return new ResponseEntity<>(carDataIfAdded.getSecond().toString(), HttpStatus.OK);
         }
-
     }
 
     @PostMapping(CARS_ROOT + "/replace")
-    public ResponseEntity<String> replaceCar(@Valid @NotNull @RequestParam("oldCarId") Long oldCarId,
-                                             @Valid @NotNull @RequestParam("secondCar") String carString,
-                                             @Valid @NotNull @RequestParam("secondCarFile") MultipartFile file)
+    public ResponseEntity<String> replaceCar(@Valid @NotNull @RequestParam("oldId") Long oldCarId,
+                                             @Valid @NotNull @RequestParam("car") String carString,
+                                             @Valid @NotNull @RequestParam("file") MultipartFile file)
             throws Exception {
 
-        if (!carDealershipService.replaceCarIfValid(oldCarId, carString, file)) {
+        Pair<Boolean, Car> carDataIfReplaced = carDealershipService.replaceCarIfValid(oldCarId, carString, file);
+
+        if (!carDataIfReplaced.getFirst()) {
             return new ResponseEntity<>(FILE_UPLOAD_INTERNAL_ERROR_FAILURE_STRING, HttpStatus.INTERNAL_SERVER_ERROR);
         } else {
-            return new ResponseEntity<>(REPLACE_CAR_SUCCESS_STRING, HttpStatus.OK);
+            return new ResponseEntity<>(carDataIfReplaced.getSecond().toString(), HttpStatus.OK);
         }
     }
 
