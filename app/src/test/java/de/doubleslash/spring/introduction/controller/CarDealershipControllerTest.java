@@ -68,14 +68,16 @@ class CarDealershipControllerTest {
     @Test
     void givenRequestToAddCarAndImage_whenProcessingRequest_thenReturnSuccessMessage()
             throws CarModelAndOrBrandStringInvalidException, InvalidFileRequestException, JsonProcessingException {
+
         final String newCarJson = "{\"brand\":\"TestBrand\",\"model\":\"TestModel\"}";
-        final Car car = Car.builder().brand("TestBrand").model("TestModel").build();
+        final Car car = Car.builder().id(1L).brand("TestBrand").model("TestModel").build();
         final MockMultipartFile file = new MockMultipartFile("TestTitle.png", "TestTitle.png",
                 MediaType.MULTIPART_FORM_DATA_VALUE, new byte[1]);
 
-        final String expected = CarDealershipService.ADD_CAR_AND_IMAGE_SUCCESS_STRING;
+        final String expected = car.toString();
 
         when(converter.convert(newCarJson, Car.class)).thenReturn(car);
+        when(carRepository.save(car)).thenReturn(car);
 
         final ResponseEntity<String> result = controller.addCarAndImage(newCarJson, file);
 
@@ -107,7 +109,7 @@ class CarDealershipControllerTest {
                         MediaType.MULTIPART_FORM_DATA_VALUE, new byte[1]);
 
         final String carString = "{\"brand\":\"TestBrand\",\"model\":\"TestModel\"}";
-        final Car car = Car.builder().id(0L).model("TestModel").brand("TestBrand").build();
+        final Car car = Car.builder().id(1L).model("TestModel").brand("TestBrand").build();
 
         final String expected = CarDealershipService.FILE_UPLOAD_INVALID_NAME_FAILURE_STRING;
 
@@ -148,22 +150,21 @@ class CarDealershipControllerTest {
 
     @Test
     void givenValidReplacementRequest_whenReplacingCar_thenReturnSuccessMessageString() throws Exception {
-
         final long firstCarId = 1;
-        final String secondCarString = "{\"brand\":\"TestBrand\",\"model\":\"TestModel\"}";
+        final String secondCarString = "{\"brand\":\"TestBrand1\",\"model\":\"TestModel\"}";
         final MockMultipartFile file =
                 new MockMultipartFile("file", "TestTitle.png",
                         MediaType.MULTIPART_FORM_DATA_VALUE, new byte[1]);
 
         final Car car = Car.builder().id(1L).model("TestModel").brand("TestBrand").build();
-        final String expected = CarDealershipService.REPLACE_CAR_SUCCESS_STRING;
 
         when(carRepository.findById(firstCarId)).thenReturn(Optional.of(car));
         when(converter.convert(secondCarString, Car.class)).thenReturn(car);
+        when(carRepository.save(car)).thenReturn(car);
 
         final ResponseEntity<String> result = controller.replaceCar(1L, secondCarString, file);
 
-        assertThat(result.getBody()).isEqualTo(expected);
+        assertThat(result.getBody()).isEqualTo(car.toString());
     }
 
     @Test

@@ -25,7 +25,6 @@ import java.util.Optional;
 @Slf4j
 @AllArgsConstructor
 public class CarDealershipService {
-    public final static String ADD_CAR_AND_IMAGE_SUCCESS_STRING = "Successfully added car along with its image.";
     public final static String CAR_JSON_PARSE_FAILURE_STRING = "Car data sent is no valid JSON.";
     public final static String CAR_MODEL_AND_OR_BRAND_NAME_INVALID_STRING = "Car model and/or brand name invalid.";
     public final static String FILE_UPLOAD_INVALID_NAME_FAILURE_STRING = "Name of file requested for upload is invalid," +
@@ -35,7 +34,6 @@ public class CarDealershipService {
     public final static String CARS_ROOT = "/cars";
     public final static String IMAGES_ROOT = "/images";
     public final static String CAR_NOT_FOUND_STRING = "No car with requested id found.";
-    public final static String REPLACE_CAR_SUCCESS_STRING = "Replacement successful.";
     public final static String DELETE_CAR_SUCCESS_STRING = "Deletion successful.";
     public final static String DELETE_CAR_BY_BRAND_SUCCESS_STRING = "Successfully deleted %d car(s) of brand %s.";
     public final static String DELETE_CAR_BY_BRAND_NONE_DELETED_NEUTRAL_STRING = "No cars were deleted.";
@@ -147,8 +145,6 @@ public class CarDealershipService {
     private Pair<Boolean, Car> addCarAndUploadImageIfValidated(Car car, MultipartFile imageOfNewCar)
             throws InvalidFileRequestException {
 
-        boolean carAndImageUploaded = false;
-
         Pair<Boolean, String> fileValidationResult = validateImageFilenameAndReturnExtension(imageOfNewCar
                 .getOriginalFilename());
 
@@ -159,17 +155,18 @@ public class CarDealershipService {
         try (InputStream inputStream = imageOfNewCar.getInputStream()) {
             String savedFilename = fileHandler.uploadFile(inputStream,
                     imageOfNewCar.getSize(), fileValidationResult.getSecond(), CARS_BUCKET);
+
+            Car saved = carRepository.save(car);
+
             // now that image object name is known, save new entity
-            CarImage carImage = new CarImage(car, savedFilename);
+            carImageRepository.save(new CarImage(car, savedFilename));
 
-            carRepository.save(car);
-            carImageRepository.save(carImage);
-            carAndImageUploaded = true;
+            return Pair.of(true, saved);
         } catch (Exception e) {
-            log.error("Requested multipart data upload failed due to exception: %s".formatted(e.getMessage()));
-        }
+            log.error("Requested multipart data upload failed due to exception", e);
 
-        return Pair.of(carAndImageUploaded, car);
+            return Pair.of(false, new Car());
+        }
     }
 
     /**

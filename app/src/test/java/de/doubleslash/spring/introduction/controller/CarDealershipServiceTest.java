@@ -78,7 +78,7 @@ public class CarDealershipServiceTest {
         String imageObjectName = "TestTitle.png";
         byte[] bytes = new byte[1];
 
-        when(minioFileHandler.downloadFile(CarDealershipService.CARS_BUCKET, imageObjectName))
+        when(minioFileHandler.downloadFile(imageObjectName, CarDealershipService.CARS_BUCKET))
                 .thenReturn(bytes);
 
         assertThat(service.getImageIfValid(imageObjectName)).isEqualTo(Pair.of(bytes, MediaType.IMAGE_PNG));
@@ -126,8 +126,9 @@ public class CarDealershipServiceTest {
                 MediaType.MULTIPART_FORM_DATA_VALUE, new byte[1]);
 
         when(converter.convert(newCarJson, Car.class)).thenReturn(car);
+        when(carRepository.save(car)).thenReturn(car);
 
-        assertThat(service.addCarAndImageIfValid(newCarJson, file).getFirst()).isTrue();
+        assertThat(service.addCarAndImageIfValid(newCarJson, file)).isEqualTo(Pair.of(true, car));
     }
 
     @Test
@@ -143,8 +144,9 @@ public class CarDealershipServiceTest {
 
         when(carRepository.findById(1L)).thenReturn(Optional.of(car));
         when(converter.convert(newCarJson, Car.class)).thenReturn(newCar);
+        when(carRepository.save(newCar)).thenReturn(newCar);
 
-        assertThat(service.replaceCarIfValid(1L, newCarJson, imageOfNewCar).getFirst()).isTrue();
+        assertThat(service.replaceCarIfValid(1L, newCarJson, imageOfNewCar)).isEqualTo(Pair.of(true, newCar));
     }
 
     @Test
