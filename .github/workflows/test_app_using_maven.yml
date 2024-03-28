@@ -1,8 +1,9 @@
 name: Automatic test of app
 on:
   push:
+    branches: [test]
     paths:
-      - '*.java'
+      - '**.java'
   workflow_dispatch:
       
 jobs:
