@@ -25,13 +25,6 @@ jobs:
         java-version: '17'
         distribution: 'temurin'
         cache: maven
-
-    - name: Cache dependencies
-      uses: actions/cache@v4
-      with:
-        path: ~/.m2
-        key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
-        restore-keys: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
         
     - name: Build Docker image
       run: docker build . -t spring-introduction
