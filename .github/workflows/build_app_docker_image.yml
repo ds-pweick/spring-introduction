@@ -3,12 +3,20 @@ on:
   workflow_run:
     workflows: [Automatic test of app]
     types: [completed]
+
+  push:
+    branches:
+      - 'main'
+    paths:
+      - '**.java'
+      - 'pom.xml'
       
   pull_request:
     branches:
       - 'main'
     paths:
       - '**.java'
+      - 'pom.xml'
       
   workflow_dispatch:
   
