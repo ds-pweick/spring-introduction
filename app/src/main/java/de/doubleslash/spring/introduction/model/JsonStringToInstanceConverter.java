@@ -9,10 +9,10 @@ import org.springframework.stereotype.Component;
 
 @Component
 @Slf4j
-public class JsonStringToInstance {
+public class JsonStringToInstanceConverter {
     private final ObjectMapper objectMapper;
 
-    public JsonStringToInstance() {
+    public JsonStringToInstanceConverter() {
         objectMapper = JsonMapper.builder().addModule(new JavaTimeModule())
                 .build();
     }

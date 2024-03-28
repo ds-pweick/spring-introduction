@@ -1,6 +1,6 @@
 package de.doubleslash.spring.introduction.controller;
 
-public class CarModelOrBrandStringInvalidException extends Exception {
+public class CarModelAndOrBrandStringInvalidException extends Exception {
     /**
      * Constructs a <code>CarModelOrBrandStringTooLongException</code> with the specified
      * detail message.
@@ -8,7 +8,7 @@ public class CarModelOrBrandStringInvalidException extends Exception {
      * @param s the detail message
      */
 
-    public CarModelOrBrandStringInvalidException(String s) {
+    public CarModelAndOrBrandStringInvalidException(String s) {
         super(s);
     }
 }

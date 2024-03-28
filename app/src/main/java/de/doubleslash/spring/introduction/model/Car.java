@@ -2,7 +2,10 @@ package de.doubleslash.spring.introduction.model;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import de.doubleslash.spring.introduction.spring.configuration.entity.Auditable;
-import jakarta.persistence.*;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -29,7 +32,7 @@ public class Car extends Auditable {
     private Long id;
     @CreatedDate
     private Instant date;
-    @OneToMany(mappedBy = "associatedCar", fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "associatedCar")
     @OnDelete(action = OnDeleteAction.CASCADE)
     @JsonManagedReference
     private List<CarImage> carImageList;
