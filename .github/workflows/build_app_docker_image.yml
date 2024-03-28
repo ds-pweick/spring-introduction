@@ -10,12 +10,14 @@ name: Auto-build Docker image of app
 on:
   push:
     branches:
-      - "main"
+      - 'main'
     paths:
-      - "*.java"
+      - '*.java'
   pull_request:
     branches:
-      - "*"
+      - 'main'
+    paths:
+      - '*.java'
 jobs:
   build_docker_image:
     runs-on: ubuntu-latest
