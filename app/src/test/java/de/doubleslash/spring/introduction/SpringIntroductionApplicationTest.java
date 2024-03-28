@@ -14,6 +14,7 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.IntStream;
 
@@ -37,6 +38,7 @@ class SpringIntroductionApplicationTest {
             .build(), new byte[1]);
     private final HttpEntity<MultiValueMap<String, Object>> multiPartHttpEntity =
             getMultiPartHttpEntity(List.of(carMultipart, fileMultipart), List.of("car", "file"));
+
 
     @NotNull
     private static HttpEntity<MultiValueMap<String, Object>> getMultiPartHttpEntity(List<Pair<ContentDisposition,
@@ -82,6 +84,26 @@ class SpringIntroductionApplicationTest {
 
         assertThat(carResponseEntity1.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(carResponseEntity1.getBody().equals(car)).isTrue();
+    }
+
+    @Test
+    void givenCar_whenHeavyAccessLoadOnEndpoint_ensureConsistentResponses() {
+        ResponseEntity<Car> carResponseEntity = template.postForEntity("http://localhost:9090/cars/add",
+                multiPartHttpEntity, Car.class);
+
+        assertThat(carResponseEntity.getStatusCode()).isEqualTo(HttpStatus.OK);
+
+        Car car = carResponseEntity.getBody();
+
+        assertThat(car).isNotNull();
+
+        final Long id = car.getId();
+
+        Arrays.stream(new int[100000]).parallel().forEach(i -> {
+            ResponseEntity<Car> carResponseEntity1 = template.getForEntity("http://localhost:9090/cars/" + id, Car.class);
+            assertThat(carResponseEntity1.getStatusCode()).isEqualTo(HttpStatus.OK);
+            assertThat(carResponseEntity1.getBody().equals(car)).isTrue();
+        });
     }
 
     @Test
