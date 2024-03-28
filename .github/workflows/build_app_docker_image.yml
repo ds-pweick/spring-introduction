@@ -8,11 +8,10 @@
 
 name: Auto-build Docker image of app
 on:
-  push:
-    branches:
-      - 'main'
-    paths:
-      - '*.java'
+  workflow_run:
+    workflows: [Automatic test of app]
+    types:
+      - completed
   pull_request:
     branches:
       - 'main'
