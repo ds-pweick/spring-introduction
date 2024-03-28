@@ -19,8 +19,6 @@ on:
     paths:
       - '**.java'
       - 'pom.xml'
-      
-  workflow_dispatch:
   
 jobs:
   build_docker_image:
