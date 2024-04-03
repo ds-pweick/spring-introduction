@@ -41,3 +41,6 @@ minio/*
 
 ### Helm Dependencies ###
 **.tgz
+
+### Local Deployment using Docker Compose ###
+localdeployment/*
