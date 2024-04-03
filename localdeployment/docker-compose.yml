@@ -1,6 +1,7 @@
 services:
   web:
-    image: "spring-introduction"
+    container_name: spring-introduction-app
+    image: dspweick/springintroduction:main
     restart: always
     ports:
       - 9090:9090
@@ -37,6 +38,4 @@ services:
       MINIO_ROOT_PASSWORD: password
     command:
       - server
-      - --console-address
-      - ":9001"
       - /data

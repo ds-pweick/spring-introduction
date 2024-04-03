@@ -3,6 +3,7 @@ package de.doubleslash.spring.introduction.model;
 import de.doubleslash.spring.introduction.config.FileHandlerConfiguration;
 import io.minio.*;
 import io.minio.errors.MinioException;
+import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
@@ -14,6 +15,7 @@ import java.util.List;
 
 @Profile("!test")
 @Service
+@Slf4j
 public class MinioFileHandler implements BlobStoreFileHandler {
     private final MinioClient minioClient;
 
@@ -23,6 +25,8 @@ public class MinioFileHandler implements BlobStoreFileHandler {
 
     @NotNull
     private static MinioClient getMinioClient(FileHandlerConfiguration configuration) {
+        log.info(configuration.getEndpoint());
+
         return MinioClient.builder().endpoint(configuration.getEndpoint()).credentials(configuration.getUsername(),
                 configuration.getPassword()).build();
     }
@@ -30,12 +34,13 @@ public class MinioFileHandler implements BlobStoreFileHandler {
     private void makeBucketIfNotExists(String minioBucket) throws Exception {
         if (!minioClient.bucketExists(BucketExistsArgs.builder().bucket(minioBucket).build())) {
             minioClient.makeBucket(MakeBucketArgs.builder().bucket(minioBucket).build());
+            log.info("Minio client created bucket %s".formatted(minioBucket));
         }
     }
 
     private void continueIfBucketExistsOrThrow(String minioBucket) throws Exception {
         if (!minioClient.bucketExists(BucketExistsArgs.builder().bucket(minioBucket).build())) {
-            throw new MinioException("Something went wrong.");
+            throw new MinioException("Bucket %s doesn't exist.".formatted(minioBucket));
         }
     }
 
@@ -63,7 +68,7 @@ public class MinioFileHandler implements BlobStoreFileHandler {
         continueIfBucketExistsOrThrow(bucketName);
 
         InputStream fileStream = minioClient.getObject(
-                GetObjectArgs.builder().bucket(filename).object(filename).build()
+                GetObjectArgs.builder().bucket(bucketName).object(filename).build()
         );
         byte[] fileData = fileStream.readAllBytes();
         fileStream.close();
