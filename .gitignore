@@ -39,8 +39,7 @@ minio/*
 **.jpeg
 **.webp
 
-### Helm Dependencies ###
-**.tgz
+
 
 ### Local Deployment using Docker Compose ###
 localdeployment/*
