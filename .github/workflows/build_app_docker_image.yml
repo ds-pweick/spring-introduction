@@ -2,23 +2,12 @@ name: Auto-build Docker image of app
 on:
   workflow_dispatch:
 
-  workflow_run:
-    workflows: [Automatic test of app]
-    types: [completed]
-
   push:
-    branches:
-      - 'main'
     paths:
       - '**.java'
-      - 'pom.xml'
-      
-  pull_request:
-    branches:
-      - 'main'
-    paths:
-      - '**.java'
-      - 'pom.xml'
+      - '**/pom.xml'
+      - '**/application*.yml'
+      - 'Dockerfile'
   
 jobs:
   build_docker_image:
@@ -51,6 +40,6 @@ jobs:
       with:
         context: .
         file: ./Dockerfile
-        push: true
+        push: ${{ github.ref_name == 'main') }}
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
