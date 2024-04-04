@@ -1,4 +1,4 @@
-name: Auto-build Docker image of app
+name: Auto-build Docker image of app and push to Docker Hub
 on:
   workflow_dispatch:
 
