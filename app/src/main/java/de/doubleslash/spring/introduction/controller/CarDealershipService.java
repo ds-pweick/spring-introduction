@@ -159,7 +159,7 @@ public class CarDealershipService {
             Car saved = carRepository.save(car);
 
             // now that image object name is known, save new entity
-            carImageRepository.save(new CarImage(car, savedFilename));
+            carImageRepository.save(new CarImage(saved, savedFilename));
 
             return Pair.of(true, saved);
         } catch (Exception e) {

@@ -1,5 +1,8 @@
 replicaCount: 1
 
+primaryDatabaseUrl: jdbc:postgresql://{{ .Release.Name }}-postgresql:5432/{{ .Values.postgresql.auth.database }}
+secondaryDatabaseUrl: http://{{ .Release.Name }}-minio:9000
+
 postgresql:
   auth:
     username: postgres
@@ -22,15 +25,15 @@ service:
   nodePort: 30090
 
 image:
-  repository: localhost:5000/spring-introduction
-  tag: "latest"
+  repository: dspweick/springintroduction
+  tag: "main"
 
 imagePullPolicy: Always
 imagePullSecrets: [ ]
 nameOverride: ""
 fullnameOverride: ""
 
-podLabels: { "component": "spring-app" }
+podLabels: { }
 
 serviceAccount:
   # Specifies whether a service account should be created
