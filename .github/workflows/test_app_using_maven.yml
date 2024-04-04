@@ -1,9 +1,11 @@
 name: Automatic test of app
 on:
   push:
-    branches: [test]
     paths:
       - '**.java'
+      - '**/pom.xml'
+      - '**/application*.yml'
+
       
   workflow_dispatch:
       
