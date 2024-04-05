@@ -39,7 +39,5 @@ minio/*
 **.jpeg
 **.webp
 
-
-
 ### Local Deployment using Docker Compose ###
 localdeployment/*
