@@ -41,3 +41,6 @@ minio/*
 
 ### Local Deployment using Docker Compose ###
 localdeployment/*
+
+### Downloaded Helm Chart Dependencies ###
+charts/charts/*
